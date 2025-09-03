@@ -4,6 +4,8 @@ import HomePage from "./pages/HomePage";
 import CreatePage from "./pages/CreatePage";
 import NoteDetailPage from "./pages/NoteDetailPage";
 import BiddingPage from "./pages/BiddingPage";
+import GamingLaptopsPage from "./pages/GamingLaptopsPage";
+
 import toast from "react-hot-toast";
 
 const App = () => {
@@ -15,6 +17,8 @@ const App = () => {
         <Route path="/create" element={<CreatePage/>}/>
         <Route path="/note/:id" element={<NoteDetailPage/>}/>
         <Route path="/bidding" element={<BiddingPage />} />
+        <Route path="/laptops" element={<GamingLaptopsPage />} />
+
       </Routes>
     </div>
   );
