@@ -57,7 +57,7 @@ function Nav() {
                   <ul className="menu dropdown-content bg-base-100 text-black rounded-box z-[1] w-52 p-2 shadow">
                     <li><Link to="/bidding">Bidding Marketplace</Link></li>
                     <li><a>Tech Insurance</a></li>
-                    <li><a>Rental Programme</a></li>
+                    <li><Link to="/rental">Rental Programme</Link></li>
                     <li><a>Pre Order Facility</a></li>
                     <li><a>Technician Booking</a></li>
                   </ul>
