@@ -44,7 +44,7 @@ function Nav() {
             Home
           </Link>
           <Link 
-            to="/adduser" 
+            to="/laptops" 
             className="btn btn-ghost text-xl font-bold no-underline transition-all duration-300 hover:bg-white/20 hover:text-primary hover:scale-110 hover:shadow-lg"
           >
             Shop
