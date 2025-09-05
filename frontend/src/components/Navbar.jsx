@@ -67,13 +67,13 @@ function Nav() {
         {/* Actions */}
         <div className="flex items-center gap-4">
           <Link 
-            to="/log" 
+            to="/login"
             className="btn btn-ghost  text-xl font-bold no-underline transition-all duration-300 hover:bg-white/20 hover:text-primary hover:scale-110 hover:shadow-lg"
           >
             Login
           </Link>
           <Link 
-            to="/regi" 
+            to="/register" 
             className="btn btn-ghost  text-xl font-bold no-underline transition-all duration-300 hover:bg-white/20 hover:text-primary hover:scale-110 hover:shadow-lg"
           >
             Register
