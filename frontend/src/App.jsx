@@ -4,7 +4,10 @@ import HomePage from "./pages/HomePage";
 import CreatePage from "./pages/CreatePage";
 import NoteDetailPage from "./pages/NoteDetailPage";
 import BiddingPage from "./pages/BiddingPage";
+import LoginPage from "./pages/LoginPage";
 import toast from "react-hot-toast";
+import RegisterPage from './pages/RegisterPage';
+import UserDashboard from './pages/UserDashboard';
 
 const App = () => {
   return (
@@ -15,6 +18,9 @@ const App = () => {
         <Route path="/create" element={<CreatePage/>}/>
         <Route path="/note/:id" element={<NoteDetailPage/>}/>
         <Route path="/bidding" element={<BiddingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+         <Route path="/register" element={<RegisterPage />} />
+         <Route path="/userdashboard" element={<UserDashboard />} />
       </Routes>
     </div>
   );
