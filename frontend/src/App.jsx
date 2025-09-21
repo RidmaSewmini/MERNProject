@@ -22,8 +22,6 @@ import GamingPeripheralPage from "./pages/GamingPeripheralPage";
 import DesktopPCPage from "./pages/DesktopPCPage";
 
 
-import toast from "react-hot-toast";
-
 import RentalPage from "./pages/Rentalpage";
 import RentalForm from "./pages/RentalForm";
 
@@ -143,6 +141,7 @@ const App = () => {
 
         {/* catch all routes */}
 				<Route path='*' element={<Navigate to='/' replace />} />
+        
         <Route path="/motherboard" element={<GamingMotherboardPage />} />
         <Route path="/Monitor" element={<GamingMonitorPage />} />
         <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
