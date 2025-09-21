@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 import Navbar from "../components/Navbar";   
 import Footer from "../components/Footer";  
 import Slider from "react-slick";
@@ -173,6 +174,7 @@ const heroSlides = [
 
 const RentalPage = () => {
   const [activeTab, setActiveTab] = useState("computing");
+  const navigate = useNavigate();
   
 
   const heroSettings = {
@@ -326,7 +328,7 @@ const filteredItems =
         <div className="flex justify-end mt-2">
           <button 
             className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-purple-200"
-            onClick={() => navigate("/rental-form", { state: { product: item.name } })}>
+            onClick={() => navigate("/rentalform", { state: { product: item.name } })}>
             <span className="relative px-3 py-1.5 transition-all ease-in duration-75 bg-gray-200 rounded-md group-hover:bg-transparent">
               Rent Now
             </span>
@@ -353,3 +355,5 @@ const filteredItems =
 };
 
 export default RentalPage;
+
+
