@@ -2,132 +2,89 @@ import { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
-const laptops = [
+
+const monitors = [
   {
     id: 1,
-    image: "src/Asset/images/laptop1.png",
-    title: "ASUS EXPERTBOOK B3 FLIP B3402FVA CORE I5",
-    price: "299,000 LKR",
-    alt: "ASUS Expertbook",
+    image: "src/Asset/images/monitor1.png",
+    title: "ASUS ROG Swift PG32UQX",
+    price: "450,000 LKR",
+    alt: "ASUS ROG Swift 32 inch",
     brand: "ASUS",
-    cpu: "Intel Core i5",
+    size: "32 inch",
+    refreshRate: "144Hz",
+    resolution: "4K",
     availability: "In Stock",
-    priceValue: 299000
+    priceValue: 450000
   },
   {
     id: 2,
-    image: "src/Asset/images/laptop2.png",
-    title: "MSI Katana 15 B14WFK Intel I7 14650HX RTX 5060",
-    price: "599,000 LKR",
-    alt: "MSI Katana",
-    brand: "MSI",
-    cpu: "Intel Core i7",
-    availability: "In Stock",
-    priceValue: 599000
+    image: "src/Asset/images/monitor2.png",
+    title: "LG UltraGear 27GN950",
+    price: "320,000 LKR",
+    alt: "LG UltraGear 27 inch",
+    brand: "LG",
+    size: "27 inch",
+    refreshRate: "144Hz",
+    resolution: "4K",
+    availability: "Pre-Order",
+    priceValue: 320000
   },
   {
     id: 3,
-    image: "src/Asset/images/laptop3.png",
-    title: "MSI Stealth A16 Mercedes AMG Ryzen 9 Ai RTX 5070",
-    price: "1,059,000 LKR",
-    alt: "MSI Stealth",
-    brand: "MSI",
-    cpu: "AMD Ryzen 9",
-    availability: "Pre-Order",
-    priceValue: 1059000
+    image: "src/Asset/images/monitor3.png",
+    title: "Samsung Odyssey G7",
+    price: "280,000 LKR",
+    alt: "Samsung Odyssey 27 inch",
+    brand: "Samsung",
+    size: "27 inch",
+    refreshRate: "240Hz",
+    resolution: "QHD",
+    availability: "In Stock",
+    priceValue: 280000
   },
   {
     id: 4,
-    image: "src/Asset/images/laptop4.png",
-    title: "ASUS ROG Strix G16 Intel i9 RTX 4070",
-    price: "725,000 LKR",
-    alt: "ASUS ROG Strix",
-    brand: "ASUS",
-    cpu: "Intel Core i9",
-    availability: "In Stock",
-    priceValue: 725000
-  },
-  {
-    id: 5,
-    image: "src/Asset/images/laptop5.png",
-    title: "Alienware M16 Intel i9 RTX 4080",
-    price: "1,250,000 LKR",
-    alt: "Alienware M16",
-    brand: "Alienware",
-    cpu: "Intel Core i9",
+    image: "src/Asset/images/monitor4.png",
+    title: "Acer Predator X34",
+    price: "350,000 LKR",
+    alt: "Acer Predator 34 inch",
+    brand: "Acer",
+    size: "34 inch",
+    refreshRate: "144Hz",
+    resolution: "UWQHD",
     availability: "Out of Stock",
-    priceValue: 1250000
-  },
-  {
-    id: 6,
-    image: "src/Asset/images/laptop6.png",
-    title: "Razer Blade 15 Intel i7 RTX 4070",
-    price: "1,100,000 LKR",
-    alt: "Razer Blade 15",
-    brand: "Razer",
-    cpu: "Intel Core i7",
-    availability: "In Stock",
-    priceValue: 1100000
-  },
-  {
-    id: 7,
-    image: "src/Asset/images/laptop7.png",
-    title: "ASUS TUF GAMING F16 FA607NUG Ryzen 7 RTX 4050",
-    price: "355,000 LKR",
-    alt: "ASUS TUF Gaming",
-    brand: "ASUS",
-    cpu: "AMD Ryzen 7",
-    availability: "Pre-Order",
-    priceValue: 355000
-  },
-  {
-    id: 8,
-    image: "src/Asset/images/laptop8.png",
-    title: "Gigabyte Aorus 15P Intel i7 RTX 3070",
-    price: "850,000 LKR",
-    alt: "Gigabyte Aorus",
-    brand: "Gigabyte",
-    cpu: "Intel Core i7",
-    availability: "In Stock",
-    priceValue: 850000
-  },
-  {
-    id: 9,
-    image: "src/Asset/images/laptop9.png",
-    title: "Lenovo Legion 5 Pro AMD Ryzen 7 RTX 3070",
-    price: "780,000 LKR",
-    alt: "Lenovo Legion",
-    brand: "Lenovo",
-    cpu: "AMD Ryzen 7",
-    availability: "In Stock",
-    priceValue: 780000
+    priceValue: 350000
   }
 ];
 
-const brands = ["All", "ASUS", "MSI", "Alienware", "Razer", "Gigabyte", "Lenovo"];
-const cpuTypes = ["All", "Intel Core i5", "Intel Core i7", "Intel Core i9", "AMD Ryzen 7", "AMD Ryzen 9"];
+const brands = ["All", "ASUS", "LG", "Samsung", "Acer"];
+const sizes = ["All", "24 inch", "27 inch", "32 inch", "34 inch"];
+const refreshRates = ["All", "60Hz", "120Hz", "144Hz", "240Hz"];
 const availabilityOptions = ["All", "In Stock", "Out of Stock", "Pre-Order"];
 
-const GamingLaptops = () => {
+const GamingMonitors = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1643000]);
+  const [priceRange, setPriceRange] = useState([0, 500000]);
   const [selectedBrand, setSelectedBrand] = useState("All");
-  const [selectedCpu, setSelectedCpu] = useState("All");
+  const [selectedSize, setSelectedSize] = useState("All");
+  const [selectedRefreshRate, setSelectedRefreshRate] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState("Price: Low to High");
 
-  const filteredLaptops = laptops.filter(laptop => {
-    const matchesSearch = laptop.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPrice = laptop.priceValue >= priceRange[0] && laptop.priceValue <= priceRange[1];
-    const matchesBrand = selectedBrand === "All" || laptop.brand === selectedBrand;
-    const matchesCpu = selectedCpu === "All" || laptop.cpu.includes(selectedCpu);
-    const matchesAvailability = selectedAvailability === "All" || laptop.availability === selectedAvailability;
-    
-    return matchesSearch && matchesPrice && matchesBrand && matchesCpu && matchesAvailability;
+  const filteredMonitors = monitors.filter(monitor => {
+    const matchesSearch = monitor.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPrice = monitor.priceValue >= priceRange[0] && monitor.priceValue <= priceRange[1];
+    const matchesBrand = selectedBrand === "All" || monitor.brand === selectedBrand;
+    const matchesSize = selectedSize === "All" || monitor.size === selectedSize;
+    const matchesRefreshRate = selectedRefreshRate === "All" || monitor.refreshRate === selectedRefreshRate;
+    const matchesAvailability = selectedAvailability === "All" || monitor.availability === selectedAvailability;
+
+    return matchesSearch && matchesPrice && matchesBrand && matchesSize && matchesRefreshRate && matchesAvailability;
   });
 
-  const sortedLaptops = [...filteredLaptops].sort((a, b) => {
+  const sortedMonitors = [...filteredMonitors].sort((a, b) => {
     switch(sortOption) {
       case "Price: Low to High":
         return a.priceValue - b.priceValue;
@@ -154,17 +111,18 @@ const GamingLaptops = () => {
   return (
     <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#141313", color: "white", fontFamily: "aldrich" }}>
       <Navbar />
-      
       <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto", width: "100%" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px", fontSize: "2.5rem", fontWeight: "bold", color: "#ff9800" }}>GAMING LAPTOPS</h1>
-        
+        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px", fontSize: "2.5rem", fontWeight: "bold", color: "#ff9800" }}>
+          GAMING MONITORS
+        </h1>
+
         {/* Search and Filter Bar */}
         <div style={{ marginBottom: "30px", display: "flex", flexDirection: "column", gap: "15px" }}>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", alignItems: "center", justifyContent: "center" }}>
             <div style={{ position: "relative", flexGrow: 1, maxWidth: "500px" }}>
               <input
                 type="text"
-                placeholder="Search laptops..."
+                placeholder="Search monitors..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
@@ -177,11 +135,8 @@ const GamingLaptops = () => {
                   fontSize: "16px"
                 }}
               />
-              <span style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", color: "#888" }}>
-                🔍
-              </span>
+              <span style={{ position: "absolute", left: "15px", top: "50%", transform: "translateY(-50%)", color: "#888" }}>🔍</span>
             </div>
-            
             <button
               onClick={() => setShowFilters(!showFilters)}
               style={{
@@ -197,17 +152,10 @@ const GamingLaptops = () => {
               {showFilters ? "HIDE FILTERS" : "SHOW FILTERS"}
             </button>
           </div>
-          
-          {/* Filters Section */}
+
           {showFilters && (
-            <div style={{ 
-              backgroundColor: "#2a2a2a", 
-              padding: "20px", 
-              borderRadius: "10px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "20px"
-            }}>
+            <div style={{ backgroundColor: "#2a2a2a", padding: "20px", borderRadius: "10px", display: "flex", flexDirection: "column", gap: "20px" }}>
+              
               <div>
                 <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>PRICE RANGE: {priceRange[0].toLocaleString()} LKR - {priceRange[1].toLocaleString()} LKR</h3>
                 <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
@@ -215,15 +163,15 @@ const GamingLaptops = () => {
                   <input
                     type="range"
                     min="0"
-                    max="1643000"
+                    max="500000"
                     value={priceRange[1]}
                     onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                     style={{ flexGrow: 1, height: "5px", borderRadius: "5px", background: "#ff9800" }}
                   />
-                  <span>1,643,000 LKR</span>
+                  <span>500,000 LKR</span>
                 </div>
               </div>
-              
+
               <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
                 <div style={{ flex: "1", minWidth: "200px" }}>
                   <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>AVAILABILITY</h3>
@@ -242,9 +190,9 @@ const GamingLaptops = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div style={{ flex: "1", minWidth: "200px" }}>
-                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>LAPTOP BRAND</h3>
+                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>BRAND</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {brands.map(brand => (
                       <label key={brand} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -260,65 +208,70 @@ const GamingLaptops = () => {
                     ))}
                   </div>
                 </div>
-                
+
                 <div style={{ flex: "1", minWidth: "200px" }}>
-                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>LAPTOP CPU</h3>
+                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>SIZE</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {cpuTypes.map(cpu => (
-                      <label key={cpu} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {sizes.map(size => (
+                      <label key={size} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <input
                           type="radio"
-                          name="cpu"
-                          value={cpu}
-                          checked={selectedCpu === cpu}
-                          onChange={() => setSelectedCpu(cpu)}
+                          name="size"
+                          value={size}
+                          checked={selectedSize === size}
+                          onChange={() => setSelectedSize(size)}
                         />
-                        {cpu}
+                        {size}
                       </label>
                     ))}
                   </div>
                 </div>
+
+                <div style={{ flex: "1", minWidth: "200px" }}>
+                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>REFRESH RATE</h3>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {refreshRates.map(rate => (
+                      <label key={rate} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <input
+                          type="radio"
+                          name="refreshRate"
+                          value={rate}
+                          checked={selectedRefreshRate === rate}
+                          onChange={() => setSelectedRefreshRate(rate)}
+                        />
+                        {rate}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
               </div>
-              
+
               <button
                 onClick={() => {
-                  setPriceRange([0, 1643000]);
+                  setPriceRange([0, 500000]);
                   setSelectedBrand("All");
-                  setSelectedCpu("All");
+                  setSelectedSize("All");
+                  setSelectedRefreshRate("All");
                   setSelectedAvailability("All");
                 }}
-                style={{
-                  padding: "10px 15px",
-                  borderRadius: "5px",
-                  border: "none",
-                  backgroundColor: "#ff9800",
-                  color: "white",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  alignSelf: "flex-start"
-                }}
+                style={{ padding: "10px 15px", borderRadius: "5px", border: "none", backgroundColor: "#ff9800", color: "white", cursor: "pointer", fontWeight: "bold", alignSelf: "flex-start" }}
               >
                 RESET FILTERS
               </button>
+
             </div>
           )}
         </div>
-        
-        {/* Results count */}
+
         <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p>{sortedLaptops.length} Laptops Found</p>
+          <p>{sortedMonitors.length} Monitors Found</p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span>Sort by:</span>
-            <select 
+            <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              style={{ 
-                padding: "8px 12px", 
-                borderRadius: "5px", 
-                border: "1px solid #444", 
-                backgroundColor: "#2a2a2a", 
-                color: "white" 
-              }}
+              style={{ padding: "8px 12px", borderRadius: "5px", border: "1px solid #444", backgroundColor: "#2a2a2a", color: "white" }}
             >
               <option>Price: Low to High</option>
               <option>Price: High to Low</option>
@@ -327,18 +280,12 @@ const GamingLaptops = () => {
             </select>
           </div>
         </div>
-        
-        {/* Laptops Grid */}
-        {sortedLaptops.length > 0 ? (
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-            gap: "25px",
-            justifyItems: "center"
-          }}>
-            {sortedLaptops.map((laptop) => (
+
+        {sortedMonitors.length > 0 ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "25px", justifyItems: "center" }}>
+            {sortedMonitors.map((monitor) => (
               <div
-                key={laptop.id}
+                key={monitor.id}
                 style={{
                   backgroundColor: "#2a2a2a",
                   border: "1px solid #444",
@@ -361,56 +308,17 @@ const GamingLaptops = () => {
                 }}
               >
                 <img 
-                  src={laptop.image} 
-                  alt={laptop.alt} 
-                  style={{ 
-                    width: "100%", 
-                    height: "180px", 
-                    objectFit: "contain", 
-                    marginBottom: "15px",
-                    borderRadius: "5px"
-                  }} 
+                  src={monitor.image} 
+                  alt={monitor.alt} 
+                  style={{ width: "100%", height: "180px", objectFit: "contain", marginBottom: "15px", borderRadius: "5px" }} 
                 />
-                <div style={{ 
-                  fontSize: "18px", 
-                  fontWeight: "bold", 
-                  marginBottom: "10px",
-                  flexGrow: 1
-                }}>
-                  {laptop.title}
+                <div style={{ fontSize: "18px", fontWeight: "bold", marginBottom: "10px", flexGrow: 1 }}>{monitor.title}</div>
+                <div style={{ color: "orange", margin: "5px 0" }}>- {monitor.size} / {monitor.refreshRate} / {monitor.resolution} -</div>
+                <div style={{ fontSize: "22px", fontWeight: "bold", margin: "10px 0", color: "#ff9800" }}>{monitor.price}</div>
+                <div style={{ ...getAvailabilityStyle(monitor.availability), borderRadius: "5px", padding: "5px 15px", fontWeight: "bold", marginTop: "10px", display: "inline-block", alignSelf: "center" }}>
+                  {monitor.availability}
                 </div>
-                <div style={{ color: "orange", margin: "5px 0" }}>- Laptop -</div>
-                <div style={{ 
-                  fontSize: "22px", 
-                  fontWeight: "bold", 
-                  margin: "10px 0", 
-                  color: "#ff9800" 
-                }}>
-                  {laptop.price}
-                </div>
-                <div style={{ 
-                  ...getAvailabilityStyle(laptop.availability),
-                  borderRadius: "5px",
-                  padding: "5px 15px",
-                  fontWeight: "bold",
-                  marginTop: "10px",
-                  display: "inline-block",
-                  alignSelf: "center"
-                }}>
-                  {laptop.availability}
-                </div>
-                <button
-                  style={{
-                    marginTop: "15px",
-                    padding: "10px 15px",
-                    borderRadius: "5px",
-                    border: "none",
-                    backgroundColor: "#ff9800",
-                    color: "white",
-                    cursor: "pointer",
-                    fontWeight: "bold"
-                  }}
-                >
+                <button style={{ marginTop: "15px", padding: "10px 15px", borderRadius: "5px", border: "none", backgroundColor: "#ff9800", color: "white", cursor: "pointer", fontWeight: "bold" }}>
                   ADD TO CART
                 </button>
               </div>
@@ -418,15 +326,14 @@ const GamingLaptops = () => {
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
-            <h2>No laptops found matching your criteria</h2>
+            <h2>No monitors found matching your criteria</h2>
             <p>Try adjusting your filters or search term</p>
           </div>
         )}
       </div>
-      
       <Footer />
     </div>
   );
 };
 
-export default GamingLaptops;
+export default GamingMonitors;

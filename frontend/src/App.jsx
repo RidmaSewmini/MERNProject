@@ -5,6 +5,13 @@ import CreatePage from "./pages/CreatePage";
 import NoteDetailPage from "./pages/NoteDetailPage";
 import BiddingPage from "./pages/BiddingPage";
 import GamingLaptopsPage from "./pages/GamingLaptopsPage";
+import GamingMotherboardPage from "./pages/GamingMotherboardPage";
+import GamingMonitorPage from "./pages/GamingMonitorPage";
+import PremiumGraphicsCardPage from "./pages/PremiumGraphicsCardPage";
+import PremiumComponentPage from "./pages/PremiumComponentPage";
+import GamingPeripheralPage from "./pages/GamingPeripheralPage";
+import DesktopPCPage from "./pages/DesktopPCPage";
+
 
 import toast from "react-hot-toast";
 
@@ -18,6 +25,13 @@ const App = () => {
         <Route path="/note/:id" element={<NoteDetailPage/>}/>
         <Route path="/bidding" element={<BiddingPage />} />
         <Route path="/laptops" element={<GamingLaptopsPage />} />
+        <Route path="/motherboard" element={<GamingMotherboardPage />} />
+        <Route path="/Monitor" element={<GamingMonitorPage />} />
+        <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
+        <Route path="/PremiumComponent" element={<PremiumComponentPage/>} />
+        <Route path="/Peripheral" element={<GamingPeripheralPage />} />
+        <Route path="/DesktopPC" element={<DesktopPCPage/>} />
+
 
       </Routes>
     </div>

@@ -2,132 +2,132 @@ import { useState } from "react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
-const laptops = [
+const motherboards = [
   {
     id: 1,
-    image: "src/Asset/images/laptop1.png",
-    title: "ASUS EXPERTBOOK B3 FLIP B3402FVA CORE I5",
-    price: "299,000 LKR",
-    alt: "ASUS Expertbook",
+    image: "src/Asset/images/motherboard1.png",
+    title: "ASUS ROG MAXIMUS Z790 HERO",
+    price: "189,000 LKR",
+    alt: "ASUS ROG Maximus",
     brand: "ASUS",
-    cpu: "Intel Core i5",
+    socket: "LGA 1700",
+    availability: "In Stock",
+    priceValue: 189000
+  },
+  {
+    id: 2,
+    image: "src/Asset/images/motherboard2.png",
+    title: "MSI MEG Z790 GODLIKE",
+    price: "299,000 LKR",
+    alt: "MSI MEG Godlike",
+    brand: "MSI",
+    socket: "LGA 1700",
     availability: "In Stock",
     priceValue: 299000
   },
   {
-    id: 2,
-    image: "src/Asset/images/laptop2.png",
-    title: "MSI Katana 15 B14WFK Intel I7 14650HX RTX 5060",
-    price: "599,000 LKR",
-    alt: "MSI Katana",
-    brand: "MSI",
-    cpu: "Intel Core i7",
-    availability: "In Stock",
-    priceValue: 599000
-  },
-  {
     id: 3,
-    image: "src/Asset/images/laptop3.png",
-    title: "MSI Stealth A16 Mercedes AMG Ryzen 9 Ai RTX 5070",
-    price: "1,059,000 LKR",
-    alt: "MSI Stealth",
-    brand: "MSI",
-    cpu: "AMD Ryzen 9",
+    image: "src/Asset/images/motherboard3.png",
+    title: "GIGABYTE Z790 AORUS XTREME",
+    price: "259,000 LKR",
+    alt: "Gigabyte Aorus Xtreme",
+    brand: "Gigabyte",
+    socket: "LGA 1700",
     availability: "Pre-Order",
-    priceValue: 1059000
+    priceValue: 259000
   },
   {
     id: 4,
-    image: "src/Asset/images/laptop4.png",
-    title: "ASUS ROG Strix G16 Intel i9 RTX 4070",
-    price: "725,000 LKR",
-    alt: "ASUS ROG Strix",
+    image: "src/Asset/images/motherboard4.png",
+    title: "ASUS ROG STRIX X670E-E GAMING WIFI",
+    price: "175,000 LKR",
+    alt: "ASUS ROG Strix X670E",
     brand: "ASUS",
-    cpu: "Intel Core i9",
+    socket: "AM5",
     availability: "In Stock",
-    priceValue: 725000
+    priceValue: 175000
   },
   {
     id: 5,
-    image: "src/Asset/images/laptop5.png",
-    title: "Alienware M16 Intel i9 RTX 4080",
-    price: "1,250,000 LKR",
-    alt: "Alienware M16",
-    brand: "Alienware",
-    cpu: "Intel Core i9",
+    image: "src/Asset/images/motherboard5.png",
+    title: "MSI MPG X670E CARBON WIFI",
+    price: "165,000 LKR",
+    alt: "MSI MPG Carbon",
+    brand: "MSI",
+    socket: "AM5",
     availability: "Out of Stock",
-    priceValue: 1250000
+    priceValue: 165000
   },
   {
     id: 6,
-    image: "src/Asset/images/laptop6.png",
-    title: "Razer Blade 15 Intel i7 RTX 4070",
-    price: "1,100,000 LKR",
-    alt: "Razer Blade 15",
-    brand: "Razer",
-    cpu: "Intel Core i7",
+    image: "src/Asset/images/motherboard6.png",
+    title: "ASRock X670E Taichi Carrara",
+    price: "225,000 LKR",
+    alt: "ASRock Taichi Carrara",
+    brand: "ASRock",
+    socket: "AM5",
     availability: "In Stock",
-    priceValue: 1100000
+    priceValue: 225000
   },
   {
     id: 7,
-    image: "src/Asset/images/laptop7.png",
-    title: "ASUS TUF GAMING F16 FA607NUG Ryzen 7 RTX 4050",
-    price: "355,000 LKR",
-    alt: "ASUS TUF Gaming",
-    brand: "ASUS",
-    cpu: "AMD Ryzen 7",
+    image: "src/Asset/images/motherboard7.png",
+    title: "GIGABYTE B650 AORUS ELITE AX",
+    price: "95,000 LKR",
+    alt: "Gigabyte B650 Aorus",
+    brand: "Gigabyte",
+    socket: "AM5",
     availability: "Pre-Order",
-    priceValue: 355000
+    priceValue: 95000
   },
   {
     id: 8,
-    image: "src/Asset/images/laptop8.png",
-    title: "Gigabyte Aorus 15P Intel i7 RTX 3070",
-    price: "850,000 LKR",
-    alt: "Gigabyte Aorus",
-    brand: "Gigabyte",
-    cpu: "Intel Core i7",
+    image: "src/Asset/images/motherboard8.png",
+    title: "ASUS TUF GAMING Z790-PLUS WIFI",
+    price: "125,000 LKR",
+    alt: "ASUS TUF Gaming Z790",
+    brand: "ASUS",
+    socket: "LGA 1700",
     availability: "In Stock",
-    priceValue: 850000
+    priceValue: 125000
   },
   {
     id: 9,
-    image: "src/Asset/images/laptop9.png",
-    title: "Lenovo Legion 5 Pro AMD Ryzen 7 RTX 3070",
-    price: "780,000 LKR",
-    alt: "Lenovo Legion",
-    brand: "Lenovo",
-    cpu: "AMD Ryzen 7",
+    image: "src/Asset/images/motherboard9.png",
+    title: "MSI MAG B760 TOMAHAWK WIFI",
+    price: "85,000 LKR",
+    alt: "MSI MAG Tomahawk",
+    brand: "MSI",
+    socket: "LGA 1700",
     availability: "In Stock",
-    priceValue: 780000
+    priceValue: 85000
   }
 ];
 
-const brands = ["All", "ASUS", "MSI", "Alienware", "Razer", "Gigabyte", "Lenovo"];
-const cpuTypes = ["All", "Intel Core i5", "Intel Core i7", "Intel Core i9", "AMD Ryzen 7", "AMD Ryzen 9"];
+const brands = ["All", "ASUS", "MSI", "Gigabyte", "ASRock"];
+const socketTypes = ["All", "LGA 1700", "AM5", "AM4", "LGA 1200"];
 const availabilityOptions = ["All", "In Stock", "Out of Stock", "Pre-Order"];
 
-const GamingLaptops = () => {
+const GamingMotherboards = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 1643000]);
+  const [priceRange, setPriceRange] = useState([0, 300000]);
   const [selectedBrand, setSelectedBrand] = useState("All");
-  const [selectedCpu, setSelectedCpu] = useState("All");
+  const [selectedSocket, setSelectedSocket] = useState("All");
   const [selectedAvailability, setSelectedAvailability] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [sortOption, setSortOption] = useState("Price: Low to High");
 
-  const filteredLaptops = laptops.filter(laptop => {
-    const matchesSearch = laptop.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesPrice = laptop.priceValue >= priceRange[0] && laptop.priceValue <= priceRange[1];
-    const matchesBrand = selectedBrand === "All" || laptop.brand === selectedBrand;
-    const matchesCpu = selectedCpu === "All" || laptop.cpu.includes(selectedCpu);
-    const matchesAvailability = selectedAvailability === "All" || laptop.availability === selectedAvailability;
+  const filteredMotherboards = motherboards.filter(motherboard => {
+    const matchesSearch = motherboard.title.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPrice = motherboard.priceValue >= priceRange[0] && motherboard.priceValue <= priceRange[1];
+    const matchesBrand = selectedBrand === "All" || motherboard.brand === selectedBrand;
+    const matchesSocket = selectedSocket === "All" || motherboard.socket === selectedSocket;
+    const matchesAvailability = selectedAvailability === "All" || motherboard.availability === selectedAvailability;
     
-    return matchesSearch && matchesPrice && matchesBrand && matchesCpu && matchesAvailability;
+    return matchesSearch && matchesPrice && matchesBrand && matchesSocket && matchesAvailability;
   });
 
-  const sortedLaptops = [...filteredLaptops].sort((a, b) => {
+  const sortedMotherboards = [...filteredMotherboards].sort((a, b) => {
     switch(sortOption) {
       case "Price: Low to High":
         return a.priceValue - b.priceValue;
@@ -156,7 +156,7 @@ const GamingLaptops = () => {
       <Navbar />
       
       <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto", width: "100%" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px", fontSize: "2.5rem", fontWeight: "bold", color: "#ff9800" }}>GAMING LAPTOPS</h1>
+        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px", fontSize: "2.5rem", fontWeight: "bold", color: "#ff9800" }}>GAMING MOTHERBOARDS</h1>
         
         {/* Search and Filter Bar */}
         <div style={{ marginBottom: "30px", display: "flex", flexDirection: "column", gap: "15px" }}>
@@ -164,7 +164,7 @@ const GamingLaptops = () => {
             <div style={{ position: "relative", flexGrow: 1, maxWidth: "500px" }}>
               <input
                 type="text"
-                placeholder="Search laptops..."
+                placeholder="Search motherboards..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{
@@ -215,12 +215,12 @@ const GamingLaptops = () => {
                   <input
                     type="range"
                     min="0"
-                    max="1643000"
+                    max="300000"
                     value={priceRange[1]}
                     onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                     style={{ flexGrow: 1, height: "5px", borderRadius: "5px", background: "#ff9800" }}
                   />
-                  <span>1,643,000 LKR</span>
+                  <span>300,000 LKR</span>
                 </div>
               </div>
               
@@ -244,7 +244,7 @@ const GamingLaptops = () => {
                 </div>
                 
                 <div style={{ flex: "1", minWidth: "200px" }}>
-                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>LAPTOP BRAND</h3>
+                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>MOTHERBOARD BRAND</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                     {brands.map(brand => (
                       <label key={brand} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -262,18 +262,18 @@ const GamingLaptops = () => {
                 </div>
                 
                 <div style={{ flex: "1", minWidth: "200px" }}>
-                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>LAPTOP CPU</h3>
+                  <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>CPU SOCKET</h3>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {cpuTypes.map(cpu => (
-                      <label key={cpu} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    {socketTypes.map(socket => (
+                      <label key={socket} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <input
                           type="radio"
-                          name="cpu"
-                          value={cpu}
-                          checked={selectedCpu === cpu}
-                          onChange={() => setSelectedCpu(cpu)}
+                          name="socket"
+                          value={socket}
+                          checked={selectedSocket === socket}
+                          onChange={() => setSelectedSocket(socket)}
                         />
-                        {cpu}
+                        {socket}
                       </label>
                     ))}
                   </div>
@@ -282,9 +282,9 @@ const GamingLaptops = () => {
               
               <button
                 onClick={() => {
-                  setPriceRange([0, 1643000]);
+                  setPriceRange([0, 300000]);
                   setSelectedBrand("All");
-                  setSelectedCpu("All");
+                  setSelectedSocket("All");
                   setSelectedAvailability("All");
                 }}
                 style={{
@@ -306,7 +306,7 @@ const GamingLaptops = () => {
         
         {/* Results count */}
         <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p>{sortedLaptops.length} Laptops Found</p>
+          <p>{sortedMotherboards.length} Motherboards Found</p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span>Sort by:</span>
             <select 
@@ -328,17 +328,17 @@ const GamingLaptops = () => {
           </div>
         </div>
         
-        {/* Laptops Grid */}
-        {sortedLaptops.length > 0 ? (
+        {/* Motherboards Grid */}
+        {sortedMotherboards.length > 0 ? (
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
             gap: "25px",
             justifyItems: "center"
           }}>
-            {sortedLaptops.map((laptop) => (
+            {sortedMotherboards.map((motherboard) => (
               <div
-                key={laptop.id}
+                key={motherboard.id}
                 style={{
                   backgroundColor: "#2a2a2a",
                   border: "1px solid #444",
@@ -361,8 +361,8 @@ const GamingLaptops = () => {
                 }}
               >
                 <img 
-                  src={laptop.image} 
-                  alt={laptop.alt} 
+                  src={motherboard.image} 
+                  alt={motherboard.alt} 
                   style={{ 
                     width: "100%", 
                     height: "180px", 
@@ -377,19 +377,19 @@ const GamingLaptops = () => {
                   marginBottom: "10px",
                   flexGrow: 1
                 }}>
-                  {laptop.title}
+                  {motherboard.title}
                 </div>
-                <div style={{ color: "orange", margin: "5px 0" }}>- Laptop -</div>
+                <div style={{ color: "orange", margin: "5px 0" }}>- {motherboard.socket} -</div>
                 <div style={{ 
                   fontSize: "22px", 
                   fontWeight: "bold", 
                   margin: "10px 0", 
                   color: "#ff9800" 
                 }}>
-                  {laptop.price}
+                  {motherboard.price}
                 </div>
                 <div style={{ 
-                  ...getAvailabilityStyle(laptop.availability),
+                  ...getAvailabilityStyle(motherboard.availability),
                   borderRadius: "5px",
                   padding: "5px 15px",
                   fontWeight: "bold",
@@ -397,7 +397,7 @@ const GamingLaptops = () => {
                   display: "inline-block",
                   alignSelf: "center"
                 }}>
-                  {laptop.availability}
+                  {motherboard.availability}
                 </div>
                 <button
                   style={{
@@ -418,7 +418,7 @@ const GamingLaptops = () => {
           </div>
         ) : (
           <div style={{ textAlign: "center", padding: "40px", color: "#888" }}>
-            <h2>No laptops found matching your criteria</h2>
+            <h2>No motherboards found matching your criteria</h2>
             <p>Try adjusting your filters or search term</p>
           </div>
         )}
@@ -429,4 +429,4 @@ const GamingLaptops = () => {
   );
 };
 
-export default GamingLaptops;
+export default GamingMotherboards;
