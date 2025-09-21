@@ -426,6 +426,43 @@ const GamingLaptops = () => {
       
       <Footer />
     </div>
+  <div className="relative min-h-screen">
+    {/* Background gradient */}
+    <div className="absolute inset-0 -z-10 w-full h-full [background:radial-gradient(80%_50%_at_50%_0%,#000_20%,#FFFFFF_80%)]"></div>
+
+    {/* Page content */}
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <div style={{ color: "white", fontFamily: "aldrich", padding: "30px" }}>
+        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px" }}>
+          Gaming Laptops
+        </h1>
+        <div style={containerStyle}>
+          {laptops.map((laptop) => (
+            <div
+              key={laptop.id}
+              style={cardStyle}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-10px)";
+                e.currentTarget.style.boxShadow = "0px 8px 20px rgba(255, 140, 0, 0.6)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <img src={laptop.image} alt={laptop.alt} style={imgStyle} />
+              <div style={titleStyle}>{laptop.title}</div>
+              <div style={categoryStyle}>- Laptop -</div>
+              <div style={priceStyle}>{laptop.price}</div>
+              <div style={stockStyle}>In Stock</div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Footer />
+    </div>
+  </div>
   );
 };
 
