@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from "react";
 import Slider from "react-slick";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import BidImg1 from '../Asset/BidImg1.png';
+import BidImg1 from '../Asset/BiddingPageAssets/BidImg1.png';
+import CompletedAuction from '../Asset/BiddingPageAssets/CompletedAuctionImg.png';
+import CurrentAuction from '../Asset/BiddingPageAssets/CurrentAuctionImg.png';
+import UpcomingAuction1 from '../Asset/BiddingPageAssets/AuctionImg1.jpg';
+import UpcomingAuction2 from '../Asset/BiddingPageAssets/AuctionImg2.png';
+import Razer from '../Asset/BiddingPageAssets/Razer.jpg';
+import Logitech from '../Asset/BiddingPageAssets/Logitech.jpg';
+import Aorus from '../Asset/BiddingPageAssets/Aorus.jpg';
+import AsusRog from '../Asset/BiddingPageAssets/AsusRog.png';
 import { Heart, Eye, Share2 } from "lucide-react";
 import Plasma from '../components/Plasma';
 
@@ -265,7 +275,7 @@ const BiddingPage = () => {
           className="relative group cursor-pointer rounded-2xl overflow-hidden shadow-lg"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=1200&q=80')",
+              `url(${CurrentAuction})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
@@ -273,7 +283,7 @@ const BiddingPage = () => {
           <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition" />
           <div className="relative p-20 text-white">
             <h2 className="text-2xl font-bold">Current Auctions</h2>
-            <p className="mt-2">20 Cars</p>
+            <p className="mt-2">20 High end Components</p>
           </div>
         </div>
 
@@ -282,15 +292,15 @@ const BiddingPage = () => {
           className="relative group cursor-pointer rounded-2xl overflow-hidden shadow-lg"
           style={{
             backgroundImage:
-              "url('https://images.unsplash.com/photo-1493238792000-8113da705763?auto=format&fit=crop&w=1200&q=80')",
+              `url(${CompletedAuction})`,
             backgroundSize: "cover",
             backgroundPosition: "center",
           }}
         >
           <div className="absolute inset-0 bg-black bg-opacity-40 group-hover:bg-opacity-60 transition" />
-          <div className="relative p-8 text-white">
+          <div className="relative p-20 text-white">
             <h2 className="text-2xl font-bold">Completed Auctions</h2>
-            <p className="mt-2">200 Cars</p>
+            <p className="mt-2">200 High end Components</p>
           </div>
         </div>
       </div>
@@ -307,7 +317,7 @@ const BiddingPage = () => {
           {/* Card 1 */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <img
-              src="/images/car1.jpg"
+              src={UpcomingAuction1}
               alt="1935 Duesenberg SSJ"
               className="w-full h-60 object-cover"
             />
@@ -330,7 +340,7 @@ const BiddingPage = () => {
           {/* Card 2 */}
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <img
-              src="/images/car2.jpg"
+              src={UpcomingAuction2}
               alt="1994 McLaren F1 LM"
               className="w-full h-60 object-cover"
             />
@@ -377,6 +387,62 @@ const BiddingPage = () => {
           </div>
         </div>
       </div>
+
+      {/* ✅ Brand Slider Section */}
+      <section className="bg-white py-12">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-10">
+            <p className="text-red-500 font-medium">Find and win your favourite brand</p>
+            <h2 className="text-3xl font-bold font-aldrich">Auction on Brands</h2>
+          </div>
+
+          {(() => {
+            const brandSettings = {
+              dots: false,
+              infinite: true,
+              speed: 600,
+              slidesToShow: 4,
+              slidesToScroll: 1,
+              autoplay: true,
+              autoplaySpeed: 2500,
+              arrows: false,
+              responsive: [
+                { breakpoint: 1024, settings: { slidesToShow: 3 } },
+                { breakpoint: 768, settings: { slidesToShow: 2 } },
+                { breakpoint: 480, settings: { slidesToShow: 1 } },
+              ],
+            };
+
+            const brands = [
+              { name: "Toyota", img: Razer, link: "/auctions/toyota" },
+              { name: "Honda", img: Logitech, link: "/auctions/honda" },
+              { name: "BMW", img: Aorus, link: "/auctions/bmw" },
+              { name: "KIA", img: AsusRog, link: "/auctions/kia" },
+            ];
+
+            return (
+            <Slider {...brandSettings}>
+              {brands.map((brand, index) => (
+                <div key={index} className="px-4">
+                  <a
+                    href={brand.link}
+                    className="block shadow-lg rounded-lg overflow-hidden hover:shadow-2xl transition h-40 w-60 relative"
+                    style={{
+                      backgroundImage: `url(${brand.img})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                    }}
+                  >
+                  </a>
+                </div>
+              ))}
+            </Slider>
+            );
+          })()}
+        </div>
+      </section>
+
+
 
     </div>
 

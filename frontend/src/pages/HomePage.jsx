@@ -166,12 +166,14 @@ const feedbacks = [
                     Upgrade effortlessly with our buyback program, rent high-end gear, or book expert repairs. 
                     We make cutting-edge technology accessible and affordable. Experience the future of tech ownership today.
                   </p>
-                  <a href="#_" class="relative inline-flex items-center justify-center p-4 px-6 py-3 overflow-hidden font-medium text-gray-300 transition duration-300 ease-out border-2 border-gray-300 rounded-full shadow-md group">
-                      <span class="absolute inset-0 flex items-center justify-center w-full h-full text-black duration-300 -translate-x-full bg-gray-300 group-hover:translate-x-0 ease">
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                  <a href="#_" className="relative inline-flex items-center justify-center p-4 px-6 py-3 overflow-hidden font-medium text-gray-300 transition duration-300 ease-out border-2 border-gray-300 rounded-full shadow-md group">
+                      <span className="absolute inset-0 flex items-center justify-center w-full h-full text-black duration-300 -translate-x-full bg-gray-300 group-hover:translate-x-0 ease">
+                          <svg className="h-6 w-6" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                          </svg>
                       </span>
-                      <span class="absolute flex items-center justify-center w-full h-full text-gray-300 transition-all duration-300 transform group-hover:translate-x-full ease">Shop the Collection</span>
-                      <span class="relative invisible">Shop the Collection</span>
+                      <span className="absolute flex items-center justify-center w-full h-full text-gray-300 transition-all duration-300 transform group-hover:translate-x-full ease">Shop the Collection</span>
+                      <span className="relative invisible">Shop the Collection</span>
                   </a>
                 </div>
               </div>

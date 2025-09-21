@@ -112,7 +112,7 @@ const UserDashboard = () => {
                 <span className="text-white font-medium">{userData.name.charAt(0)}</span>
               </div>
               <div className="ml-2 hidden md:block">
-                <p className="text-sm font-medium text-gray-700">{userData.name}</p>
+                <Link to="/DashboardPage"> <p className="text-sm font-medium text-gray-700">{userData.name}</p> </Link>
                 <p className="text-xs text-gray-500">{userData.membership} Member</p>
               </div>
             </div>
