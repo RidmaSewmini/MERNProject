@@ -5,7 +5,7 @@ import Navbar from "../components/Navbar";
 const laptops = [
   {
     id: 1,
-    image: "src/Asset/images/laptop1.png",
+    image: "/images/laptop1.png",
     title: "ASUS EXPERTBOOK B3 FLIP B3402FVA CORE I5",
     price: "299,000 LKR",
     alt: "ASUS Expertbook",
@@ -16,7 +16,7 @@ const laptops = [
   },
   {
     id: 2,
-    image: "src/Asset/images/laptop2.png",
+    image: "/images/laptop2.png",
     title: "MSI Katana 15 B14WFK Intel I7 14650HX RTX 5060",
     price: "599,000 LKR",
     alt: "MSI Katana",
@@ -27,7 +27,7 @@ const laptops = [
   },
   {
     id: 3,
-    image: "src/Asset/images/laptop3.png",
+    image: "/images/laptop3.png",
     title: "MSI Stealth A16 Mercedes AMG Ryzen 9 Ai RTX 5070",
     price: "1,059,000 LKR",
     alt: "MSI Stealth",
@@ -38,7 +38,7 @@ const laptops = [
   },
   {
     id: 4,
-    image: "src/Asset/images/laptop4.png",
+    image: "/images/laptop4.png",
     title: "ASUS ROG Strix G16 Intel i9 RTX 4070",
     price: "725,000 LKR",
     alt: "ASUS ROG Strix",
@@ -49,7 +49,7 @@ const laptops = [
   },
   {
     id: 5,
-    image: "src/Asset/images/laptop5.png",
+    image: "/images/laptop5.png",
     title: "Alienware M16 Intel i9 RTX 4080",
     price: "1,250,000 LKR",
     alt: "Alienware M16",
@@ -60,7 +60,7 @@ const laptops = [
   },
   {
     id: 6,
-    image: "src/Asset/images/laptop6.png",
+    image: "/images/laptop6.png",
     title: "Razer Blade 15 Intel i7 RTX 4070",
     price: "1,100,000 LKR",
     alt: "Razer Blade 15",
@@ -71,7 +71,7 @@ const laptops = [
   },
   {
     id: 7,
-    image: "src/Asset/images/laptop7.png",
+    image: "/images/laptop7.png",
     title: "ASUS TUF GAMING F16 FA607NUG Ryzen 7 RTX 4050",
     price: "355,000 LKR",
     alt: "ASUS TUF Gaming",
@@ -82,7 +82,7 @@ const laptops = [
   },
   {
     id: 8,
-    image: "src/Asset/images/laptop8.png",
+    image: "/images/laptop8.png",
     title: "Gigabyte Aorus 15P Intel i7 RTX 3070",
     price: "850,000 LKR",
     alt: "Gigabyte Aorus",
@@ -93,7 +93,7 @@ const laptops = [
   },
   {
     id: 9,
-    image: "src/Asset/images/laptop9.png",
+    image: "/images/laptop9.png",
     title: "Lenovo Legion 5 Pro AMD Ryzen 7 RTX 3070",
     price: "780,000 LKR",
     alt: "Lenovo Legion",
@@ -152,10 +152,10 @@ const GamingLaptops = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#141313", color: "white", fontFamily: "aldrich" }}>
+    <div className="flex flex-col min-h-screen" style={{ backgroundColor: "#141313", color: "white" }}>
       <Navbar />
       
-      <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto", width: "100%" }}>
+      <div style={{ padding: "20px", maxWidth: "1400px", margin: "0 auto", width: "100%", flex: 1 }}>
         <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px", fontSize: "2.5rem", fontWeight: "bold", color: "#ff9800" }}>GAMING LAPTOPS</h1>
         
         {/* Search and Filter Bar */}
@@ -210,7 +210,7 @@ const GamingLaptops = () => {
             }}>
               <div>
                 <h3 style={{ marginBottom: "10px", color: "#ff9800" }}>PRICE RANGE: {priceRange[0].toLocaleString()} LKR - {priceRange[1].toLocaleString()} LKR</h3>
-                <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap" }}>
                   <span>0 LKR</span>
                   <input
                     type="range"
@@ -218,7 +218,7 @@ const GamingLaptops = () => {
                     max="1643000"
                     value={priceRange[1]}
                     onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                    style={{ flexGrow: 1, height: "5px", borderRadius: "5px", background: "#ff9800" }}
+                    style={{ flexGrow: 1, height: "5px", borderRadius: "5px", background: "#ff9800", minWidth: "200px" }}
                   />
                   <span>1,643,000 LKR</span>
                 </div>
@@ -305,7 +305,7 @@ const GamingLaptops = () => {
         </div>
         
         {/* Results count */}
-        <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "10px" }}>
           <p>{sortedLaptops.length} Laptops Found</p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <span>Sort by:</span>
@@ -426,43 +426,6 @@ const GamingLaptops = () => {
       
       <Footer />
     </div>
-  <div className="relative min-h-screen">
-    {/* Background gradient */}
-    <div className="absolute inset-0 -z-10 w-full h-full [background:radial-gradient(80%_50%_at_50%_0%,#000_20%,#FFFFFF_80%)]"></div>
-
-    {/* Page content */}
-    <div className="flex flex-col min-h-screen">
-      <Navbar />
-      <div style={{ color: "white", fontFamily: "aldrich", padding: "30px" }}>
-        <h1 style={{ textAlign: "center", marginBottom: "30px", paddingTop: "50px" }}>
-          Gaming Laptops
-        </h1>
-        <div style={containerStyle}>
-          {laptops.map((laptop) => (
-            <div
-              key={laptop.id}
-              style={cardStyle}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-10px)";
-                e.currentTarget.style.boxShadow = "0px 8px 20px rgba(255, 140, 0, 0.6)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <img src={laptop.image} alt={laptop.alt} style={imgStyle} />
-              <div style={titleStyle}>{laptop.title}</div>
-              <div style={categoryStyle}>- Laptop -</div>
-              <div style={priceStyle}>{laptop.price}</div>
-              <div style={stockStyle}>In Stock</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      <Footer />
-    </div>
-  </div>
   );
 };
 
