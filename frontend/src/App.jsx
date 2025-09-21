@@ -14,6 +14,16 @@ import EmailVerificationPage from "./pages/EmailVerificationPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import GamingLaptopsPage from "./pages/GamingLaptopsPage";
+import GamingMotherboardPage from "./pages/GamingMotherboardPage";
+import GamingMonitorPage from "./pages/GamingMonitorPage";
+import PremiumGraphicsCardPage from "./pages/PremiumGraphicsCardPage";
+import PremiumComponentPage from "./pages/PremiumComponentPage";
+import GamingPeripheralPage from "./pages/GamingPeripheralPage";
+import DesktopPCPage from "./pages/DesktopPCPage";
+
+
+import toast from "react-hot-toast";
+
 import RentalPage from "./pages/Rentalpage";
 import RentalForm from "./pages/RentalForm";
 
@@ -133,7 +143,12 @@ const App = () => {
 
         {/* catch all routes */}
 				<Route path='*' element={<Navigate to='/' replace />} />
-
+        <Route path="/motherboard" element={<GamingMotherboardPage />} />
+        <Route path="/Monitor" element={<GamingMonitorPage />} />
+        <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
+        <Route path="/PremiumComponent" element={<PremiumComponentPage/>} />
+        <Route path="/Peripheral" element={<GamingPeripheralPage />} />
+        <Route path="/DesktopPC" element={<DesktopPCPage/>} />
       </Routes>
     </div>
   );

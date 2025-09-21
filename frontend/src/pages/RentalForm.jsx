@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router";
 import WirelessMousemg1 from '../Asset/WirelessMouse.jpeg';
 
 const RentalForm = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const selectedProduct = location.state?.product || "";
+  
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     phone: "",
     nic: "",
     address: "",
-    product: "",
+    product: selectedProduct,
     quantity: 1,
     startDate: "",
     endDate: "",
@@ -20,11 +25,30 @@ const RentalForm = () => {
 
   // Example base prices for products (LKR per day)
   const basePrices = {
-    Laptop: 1500,
-    Monitor: 800,
-    Keyboard: 300,
+    "HP Pavilion Laptop": 1500,
+    "Mac Book": 2000,
+    "Curved Gaming Monitor": 800,
+    "Wireless Keyboard": 300,
     "Wireless Mouse": 200,
-    Headphones: 500,
+    "Bluetooth Headphones": 500,
+    "JBL bluetooth Speaker": 400,
+    "Gaming Microphone": 350,
+    "Web Cam": 300,
+    "External Hard Drive (HDD)": 400,
+    "USB-C Hub": 250,
+    "Wi-Fi Router": 500,
+    "Network Switch 8-Port": 600,
+    "Power line Adapter": 200,
+    "USB-C Ethernet Adapter": 150,
+    "Flash Drives 32GB": 100,
+    "Flash Drives 128GB": 200,
+    "Memory Card Reader": 100,
+    "Power Bank 10000mAh": 300,
+    "PowerBank 32000mAh": 500,
+    "8 Ports USB Charging Station": 400,
+    "Gaming Motherboard": 800,
+    "Gaming PC": 2000,
+    "iMac Desktop Computer": 1800,
     Default: 1000,
   };
 
@@ -76,17 +100,19 @@ const RentalForm = () => {
             className="w-full h-80 object-cover rounded mb-4"
           />
            {/* Product Name */}
-          <h3 className="text-xl font-bold mb-2">Wireless Mouse</h3>
+          <h3 className="text-xl font-bold mb-2">{selectedProduct || "Select a Product"}</h3>
 
           {/* Product Description */}
           <p className="text-gray-700 text-center mb-2">
-            Comfortable and lightweight wireless mouse with long battery life 
-            and smooth precision tracking. Perfect for office, study, or travel use.
+            {selectedProduct 
+              ? `High-quality ${selectedProduct.toLowerCase()} available for rent. Perfect for your projects and events.`
+              : "Choose a product from our rental page to see details here."
+            }
           </p>
 
           {/* Price */}
           <p className="text-lg font-semibold text-blue-600 mb-6">
-            Price per day: LKR 200
+            Price per day: LKR {basePrices[selectedProduct] || basePrices["Default"]}
           </p>
 
           {/* Terms & Conditions */}
@@ -102,6 +128,14 @@ const RentalForm = () => {
 
         {/* Right Side - Rental Form */}
         <div className="w-1/2 p-8">
+          <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => navigate("/rental")}
+              className="text-blue-600 hover:text-blue-800 font-medium"
+            >
+              ← Back to Rental Showcase
+            </button>
+          </div>
           <h2 className="text-3xl font-bold mb-6 text-center">Rental Form</h2>
 
           <form onSubmit={handleSubmit}>
@@ -168,15 +202,29 @@ const RentalForm = () => {
             {/* Product */}
             <div className="mb-4">
               <label className="block mb-1 font-semibold">Product</label>
-              <input
-                type="text"
-                name="product"
-                value={formData.product}
-                onChange={handleChange}
-                placeholder="Enter product name"
-                className="w-full border rounded p-2"
-                required
-              />
+              {selectedProduct ? (
+                <input
+                  type="text"
+                  name="product"
+                  value={formData.product}
+                  onChange={handleChange}
+                  className="w-full border rounded p-2 bg-gray-100"
+                  readOnly
+                />
+              ) : (
+                <select
+                  name="product"
+                  value={formData.product}
+                  onChange={handleChange}
+                  className="w-full border rounded p-2"
+                  required
+                >
+                  <option value="">Select a product</option>
+                  {Object.keys(basePrices).filter(key => key !== "Default").map(product => (
+                    <option key={product} value={product}>{product}</option>
+                  ))}
+                </select>
+              )}
             </div>
 
             {/* Quantity */}
