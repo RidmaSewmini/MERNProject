@@ -1,4 +1,5 @@
 import  { useState, useEffect, useRef } from 'react';
+import { Link } from "react-router";
 import { Quote } from 'lucide-react';
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
@@ -33,34 +34,13 @@ function HomePage() {
   const sectionRef = useRef(null);
   
 const products = [
-  {
-    title: "Gaming Motherboards",
-    img: Component1,
-  },
-  {
-    title: "Premium Graphics Cards",
-    img: Component2,
-  },
-  {
-    title: "Gaming Laptops",
-    img: Component3,
-  },
-  {
-    title: "Gaming Monitors",
-    img: Component4,
-  },
-  {
-    title: "Desktop PC",
-    img: Component5,
-  },
-  {
-    title: "Gaming Peripherals",
-    img: Component6,
-  },
-  {
-    title: "Premium Components",
-    img: Component7,
-  },
+  { title: "Gaming Motherboards", img: Component1, path: "/motherboard" },
+  { title: "Premium Graphics Cards", img: Component2, path: "/PremiumGraphicsCard" },
+  { title: "Gaming Laptops", img: Component3, path: "/laptops" },
+  { title: "Gaming Monitors", img: Component4, path: "/Monitor" },
+  { title: "Desktop PC", img: Component5, path: "/DesktopPC" },
+  { title: "Gaming Peripherals", img: Component6, path: "/Peripheral" },
+  { title: "Premium Components", img: Component7, path: "/PremiumComponent" },
 ];
 
   const services = [
@@ -148,7 +128,7 @@ const feedbacks = [
 
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen font-titillium">
       <Navbar />
       <div className="flex-1 ">
         <div className="w-full">
@@ -189,18 +169,22 @@ const feedbacks = [
       </h2>
 
       {/* Product Grid */}
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-10 justify-items-center">
-        {products.map((product, index) => (
-          <div key={index} className="flex flex-col items-center text-center">
-            <img
-              src={product.img}
-              alt={product.title}
-              className="h-32 object-contain mb-4"
-            />
-            <p className="text-sm md:text-base">{product.title}</p>
-          </div>
-        ))}
-      </div>
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-10 justify-items-center">
+          {products.map((product, index) => (
+            <Link 
+              key={index} 
+              to={product.path} 
+              className="flex flex-col items-center text-center hover:scale-105 transition-transform"
+            >
+              <img
+                src={product.img}
+                alt={product.title}
+                className="h-32 object-contain mb-4"
+              />
+              <p className="text-sm md:text-base">{product.title}</p>
+            </Link>
+          ))}
+        </div>
     </section>
 
           {/* Services Showcase */}
