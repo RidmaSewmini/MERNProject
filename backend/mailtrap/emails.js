@@ -31,7 +31,7 @@ export const sendWelcomeEmail = async (email, firstName) => {
     const response = await mailtrapClient.send({
       from: sender,
       to: recipient,
-      template_uuid: "5eb32ce6-9872-463a-8485-a48dbde1d1b7",
+      template_uuid: "9c46a26f-9d6c-4a80-a312-6bdef1e54e9f",
       template_variables: {
         company_info_name: "TechSphere Lanka",
         firstName,   // ✅ matches {{firstName}}
@@ -82,4 +82,31 @@ export const sendResetSuccessEmail = async (email) => {
 
 		throw new Error(`Error sending password reset success email: ${error}`);
 	}
+};
+
+/* =========================
+   Generic Email Function
+   =========================
+   For bidding notifications / other custom emails
+*/
+
+export const sendEmail = async ({ email, subject, text, html }) => {
+    if (!email) throw new Error("No recipients defined");
+
+    const recipient = [{ email }];
+
+    try {
+        const response = await mailtrapClient.send({
+            from: sender,
+            to: recipient,
+            subject,
+            text,
+            html, // optional, you can send either text or html
+        });
+
+        console.log(`Email sent successfully to ${email}`, response);
+    } catch (error) {
+        console.error(`Error sending email to ${email}`, error);
+        throw new Error(`Error sending email: ${error}`);
+    }
 };
