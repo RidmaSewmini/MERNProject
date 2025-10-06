@@ -9,7 +9,7 @@ import cloudinary from "cloudinary";
 import { connectDB } from "./db/connectDB.js";
 import authRoutes from "./routes/auth.route.js";
 import bidProductRoutes from "./routes/bidProductRoute.js"; 
-import biddingRoutes from "./routes/biddingRoute.js"; // <-- New import
+import biddingRoutes from "./routes/biddingRoute.js";
 //import "./utils/auctionScheduler.js";
 
 // import error middleware

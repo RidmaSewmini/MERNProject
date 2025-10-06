@@ -1,7 +1,9 @@
+import mongoose from "mongoose";
 import BidProduct from "../models/bidProductModel.js";
+import Bidding from "../models/biddingModel.js";
 import cloudinary from "cloudinary";
 
-// Create Product (yours - unchanged)
+// Create Product
 export const createBidProduct = async (req, res) => {
   try {
     const {
@@ -95,6 +97,38 @@ export const getAllProducts = async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Get Single Product by ID (with bids)
+export const getProductById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: "Invalid product ID" });
+    }
+
+    const product = await BidProduct.findById(id).populate("user", "name email");
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const bids = await Bidding.find({ product: id })
+      .sort({ createdAt: -1 })
+      .populate("user", "name email");
+
+    const highestBid = bids.length > 0 ? Math.max(...bids.map((b) => b.price)) : null;
+
+    res.status(200).json({
+      ...product.toObject(),
+      bids,
+      currentBid: highestBid || product.startingBid,
+      totalBids: bids.length,
+    });
+  } catch (error) {
+    console.error("Error fetching product by ID:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -265,13 +299,41 @@ export const verifyAndAddCommissionByAdmin = async (req, res) => {
     const { id } = req.params;
 
     const product = await BidProduct.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    // Convert commission to number safely
+    const commissionNum = parseFloat(commission.toString().replace("%", ""));
+    if (isNaN(commissionNum)) {
+      return res.status(400).json({ success: false, message: "Commission must be a valid number" });
+    }
+
+    product.isVerified = true;
+    product.commission = commissionNum;
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product verified successfully",
+      product,
+    });
+  } catch (error) {
+    console.error("Error verifying product:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Verify Product Only (Admin)
+export const verifyProductByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await BidProduct.findById(id);
+
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     product.isVerified = true;
-    product.commission = commission;
-
     await product.save();
 
     res.status(200).json({
@@ -295,6 +357,64 @@ export const getAllProductsByAdmin = async (req, res) => {
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching all products (Admin):", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Update Product (Admin with Image Upload)
+export const updateProductByAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const product = await BidProduct.findById(id);
+    if (!product) return res.status(404).json({ success: false, message: "Product not found" });
+
+    let newImages = [];
+
+    if (req.files && req.files.length > 0) {
+      // Delete old images from Cloudinary
+      if (product.images && product.images.length > 0) {
+        for (const img of product.images) {
+          if (img.public_id) {
+            await cloudinary.v2.uploader.destroy(img.public_id);
+          }
+        }
+      }
+
+      // Upload new images
+      const uploadPromises = req.files.map((file) =>
+        cloudinary.v2.uploader.upload(file.path, {
+          folder: "Bidding/BidProducts",
+          resource_type: "image",
+          use_filename: true,
+          unique_filename: false,
+        })
+      );
+
+      const uploadedImages = await Promise.all(uploadPromises);
+
+      newImages = uploadedImages.map((img, index) => ({
+        fileName: req.files[index].name || req.files[index].originalname,
+        filePath: img.secure_url,
+        fileType: img.format,
+        public_id: img.public_id,
+      }));
+
+      product.images = newImages;
+    }
+
+    // Update other fields
+    Object.assign(product, req.body);
+
+    await product.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Product updated successfully by admin",
+      product,
+    });
+  } catch (error) {
+    console.error("Error updating product by admin:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
@@ -338,4 +458,3 @@ export const deleteProductsByAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-

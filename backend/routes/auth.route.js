@@ -10,9 +10,13 @@ import {
 	updateProfile,
 	loginAsSeller,
 	getUser,
-	getUserBalance,   // 🔹 added
-	getAllUser,       // 🔹 added
-	estimateIncome    // 🔹 added
+	getUserBalance,   
+	getAllUser,       
+	estimateIncome,
+	createUserByAdmin,
+	updateUserByAdmin,
+	deleteUserByAdmin,
+	changePassword    
 } from "../controllers/auth.controller.js";
 import { verifyToken } from "../middleware/verifyToken.js";
 import { protect,isSeller,isAdmin } from "../middleware/authMiddleware.js";
@@ -39,5 +43,10 @@ router.get("/get-user", protect, getUser);
 router.get("/sell-amount", protect, isSeller, getUserBalance);
 router.get("/estimate-income", protect, isAdmin, estimateIncome);
 router.get("/users", protect, isAdmin, getAllUser);
+router.post("/admin/users", protect, isAdmin, upload.single("photo"), createUserByAdmin);
+router.patch("/admin/users/:userId", protect, isAdmin, upload.single("photo"), updateUserByAdmin);
+router.delete("/admin/users/:userId", protect, isAdmin, deleteUserByAdmin);
+
+router.put("/change-password", protect, changePassword);
 
 export default router;

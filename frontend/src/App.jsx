@@ -7,6 +7,8 @@ import HomePage from "./pages/HomePage.jsx";
 import LoginPage from "./pages/UserManagement/LoginPage.jsx";
 import RegisterPage from "./pages/UserManagement/RegisterPage.jsx";
 import VerifyEmailPage from "./pages/UserManagement/EmailVerificationPage.jsx";
+import ForgotPasswordPage from "./pages/UserManagement/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/UserManagement/ResetPasswordPage.jsx";
 import UserDashboard from "./pages/UserManagement/UserDashboard.jsx";
 import AdminDashboard from "./pages/UserManagement/AdminDashboard.jsx";
 import LoadingSpinner from "./components/LoadingSpinner";
@@ -98,10 +100,12 @@ export default function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
       <Route path="/bidding" element={<BiddingPage />} />
       <Route path="/bidproducts" element={<BidProductsPage />} />
-      <Route path="/bidproductdetails" element={<BidProductDetailsPage />} />
+      <Route path="/product/:id" element={<BidProductDetailsPage />} />
       <Route path="/laptops" element={<GamingLaptopsPage />} />
       <Route path="/motherboard" element={<GamingMotherboardPage />} />
       <Route path="/Monitor" element={<GamingMonitorPage />} />

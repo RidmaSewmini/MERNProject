@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { Heart, Eye, Share2 } from "lucide-react";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
-import BidImg1 from '../../Asset/BiddingPageAssets/BidImg1.png';
+
+//Assets
 import CompletedAuction from '../../Asset/BiddingPageAssets/CompletedAuctionImg.png';
 import CurrentAuction from '../../Asset/BiddingPageAssets/CurrentAuctionImg.png';
 import UpcomingAuction1 from '../../Asset/BiddingPageAssets/AuctionImg1.jpg';
@@ -13,79 +16,84 @@ import Razer from '../../Asset/BiddingPageAssets/Razer.jpg';
 import Logitech from '../../Asset/BiddingPageAssets/Logitech.jpg';
 import Aorus from '../../Asset/BiddingPageAssets/Aorus.jpg';
 import AsusRog from '../../Asset/BiddingPageAssets/AsusRog.png';
-import { Heart, Eye, Share2 } from "lucide-react";
-import { Link } from 'react-router';
-import Plasma from '../../components/Plasma';
+import bidimg1 from '../../Asset/BiddingPageAssets/bidimg1.jpg';
+import bidimg2 from '../../Asset/BiddingPageAssets/bidimg2.jpg';
+import bidimg3 from '../../Asset/BiddingPageAssets/bidimg3.jpg';
+import bidimg4 from '../../Asset/BiddingPageAssets/bidimg4.jpg';
+import bidimg5 from '../../Asset/BiddingPageAssets/bidimg5.jpg';
+import bidimg6 from '../../Asset/BiddingPageAssets/bidimg6.jpg';
+import BidHero1 from '../../Asset/BiddingPageAssets/BidHero1.jpg';
+import BidHero2 from '../../Asset/BiddingPageAssets/BidHero2.jpg';
 
 const heroSlides = [
   {
     title: "Your Products Deserve a Second Life",
     description:
       "Sell your products directly to eager bidders and use your earnings to power up with premium upgrades. One marketplace — endless possibilities.",
-    img: BidImg1,
+    img: BidHero1,
     bgImg: "",
   },
   {
     title: "Upgrade Smarter, Not Harder",
     description:
       "Join thousands of sellers turning yesterday's gadgets into tomorrow's opportunities. List today and watch the bidding war begin.",
-    img: BidImg1,
+    img: BidHero2,
   },
   {
     title: "Bid on Premium Tech for Less",
     description:
       "Why pay full price? Compete in real-time auctions and grab used devices at unbeatable prices, only on our marketplace.",
-    img: BidImg1,
+    img: BidHero1,
   },
 ];
 
 const auctionProducts = [
   {
     id: 1,
-    title: "1964 Ferrari 250 LM",
-    desc: "Classic sports car, collector's edition with timeless design.",
-    price: "6,000,000 PKR",
-    img: "/cars/ferrari-red.jpg",
+    title: "NVIDIA GeForce RTX 4090 Founders Edition",
+    desc: "The flagship gaming GPU. Unmatched performance for 4K and AI-driven tasks.",
+    price: "700,000 LKR",
+    img: bidimg1,
     time: 2419200, // in seconds (30h)
   },
   {
     id: 2,
-    title: "1994 McLaren F1 LM",
-    desc: "Legendary supercar with race-bred performance.",
-    price: "6,000,000 PKR",
-    img: "/cars/mclaren.jpg",
+    title: "Custom Loop Water Cooling Kit (EKWB)",
+    desc: "Premium, complete liquid cooling solution for extreme overclocking and aesthetics.",
+    price: "150,000 LKR",
+    img: bidimg2,
     time: 2419200,
   },
   {
     id: 3,
-    title: "1961 Ferrari 250 GT SWB California Spyder",
-    desc: "Exclusive convertible masterpiece, rare in market.",
-    price: "6,000,000 PKR",
-    img: "/cars/ferrari-blue.jpg",
+    title: "Intel Core i9-14900K Processor",
+    desc: "Top-tier unlocked desktop CPU for gaming and professional content creation.",
+    price: "180,000 LKR",
+    img: bidimg3,
     time: 2419200,
   },
   {
     id: 4,
-    title: "Corolla Hybrid",
-    desc: "Modern efficiency meets reliability, perfect for city drives.",
-    price: "6,000,000 PKR",
-    img: "/cars/corolla.jpg",
+    title: "Razer BlackWidow V4 Pro Mechanical Keyboard",
+    desc: "A full-featured gaming keyboard with customizable RGB and dedicated macro keys.",
+    price: "45,000 LKR",
+    img: bidimg4,
     time: 2419200,
   },
     {
-    id: 4,
-    title: "Corolla Hybrid",
-    desc: "Modern efficiency meets reliability, perfect for city drives.",
-    price: "6,000,000 PKR",
-    img: "/cars/corolla.jpg",
+    id: 5,
+    title: "Samsung Odyssey Neo G9 49-inch Monitor",
+    desc: "Ultra-wide, curved Mini LED monitor with 240Hz refresh rate for immersive gaming.",
+    price: "450,000 LKR",
+    img: bidimg5,
     time: 2419200,
   },
-    {
-    id: 4,
-    title: "Corolla Hybrid",
-    desc: "Modern efficiency meets reliability, perfect for city drives.",
-    price: "6,000,000 PKR",
-    img: "/cars/corolla.jpg",
+  {
+    id: 6,
+    title: "Corsair Dominator Platinum RGB 64GB DDR5 RAM",
+    desc: "High-speed, low-latency memory modules with premium heat spreaders and lighting.",
+    price: "90,000 PKR",
+    img: bidimg6,
     time: 2419200,
   },
 ];
@@ -308,15 +316,13 @@ const BiddingPage = () => {
           <div className="bg-white shadow-md rounded-lg overflow-hidden">
             <img
               src={UpcomingAuction1}
-              alt="1935 Duesenberg SSJ"
+              alt="High-Performance RGB Gaming PC Case"
               className="w-full h-60 object-cover"
             />
             <div className="p-4">
-              <h3 className="font-semibold text-lg">1935 Duesenberg SSJ</h3>
+              <h3 className="font-semibold text-lg">The Aurora ATX Mid-Tower</h3>
               <p className="text-gray-600 text-sm mt-2">
-                The 1935 Duesenberg SSJ is an American automotive legend. The SSJ
-                draws power from a dual-supercharged, inline-eight-cylinder engine
-                supplying 400-hp.
+                A sleek, full-tower chassis designed for maximum airflow and showcasing high-end components. Features multiple RGB fans, tempered glass panels, and ample space for liquid cooling setups. Essential for serious gamers and builders.
               </p>
               <div className="flex justify-between items-center mt-4">
                 <button className="px-4 py-2 bg-gray-200 rounded">Reminder</button>
@@ -335,11 +341,9 @@ const BiddingPage = () => {
               className="w-full h-60 object-cover"
             />
             <div className="p-4">
-              <h3 className="font-semibold text-lg">1994 McLaren F1 LM</h3>
+              <h3 className="font-semibold text-lg">AuraGlow 15W Charging Disc</h3>
               <p className="text-gray-600 text-sm mt-2">
-                Most cars that sell for tens of millions of dollars are from half a
-                century ago. The McLaren F1 debuted in 1992 and already has an
-                astronomical value.
+                A stylish and compact charging solution. This Qi-certified pad delivers fast, efficient power to compatible smartphones. The non-slip surface and slim profile make it perfect for desks or nightstands.
               </p>
               <div className="flex justify-between items-center mt-4">
                 <button className="px-4 py-2 bg-gray-200 rounded">Reminder</button>

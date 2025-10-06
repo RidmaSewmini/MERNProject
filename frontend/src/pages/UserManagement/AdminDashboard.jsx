@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, react } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
@@ -11,8 +11,8 @@ import {
   CreditCardIcon,
   WalletIcon,
   LogOutIcon,
-  BoxIcon,
   CheckCircleIcon,
+  Camera, Save,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -36,19 +36,15 @@ const AdminDashboard = () => {
       try {
         setLoading(true);
 
-        // ✅ All users
         const usersRes = await axios.get(`${API_BASE}/auth/users`, { withCredentials: true });
         setAllUsers(usersRes.data.users || []);
 
-        // ✅ All bid products (admin)
         const bidProductsRes = await axios.get(`${API_BASE}/bid-products/admin/products`, { withCredentials: true });
         setAllBidProducts(bidProductsRes.data || []);
 
-        // ✅ Income
         const incomeRes = await axios.get(`${API_BASE}/auth/estimate-income`, { withCredentials: true });
         setIncome(incomeRes.data?.income || 0);
 
-        // ✅ Winning bids (sold products)
         const winningBidsRes = await axios.get(`${API_BASE}/bid-products/sold`, { withCredentials: true });
         setWinningBids(winningBidsRes.data || []);
 
@@ -67,18 +63,11 @@ const AdminDashboard = () => {
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
-        return (
-          <DashboardOverview
-            allUsers={allUsers}
-            allBidProducts={allBidProducts}
-            income={income}
-            winningBids={winningBids}
-          />
-        );
+        return <DashboardOverview allUsers={allUsers} allBidProducts={allBidProducts} income={income} winningBids={winningBids} />;
       case "all-users":
-        return <UsersOverview users={allUsers} />;
+        return <UsersOverview users={allUsers} fetchUsers={() => axios.get(`${API_BASE}/auth/users`, { withCredentials: true }).then(res => setAllUsers(res.data.users || []))} API_BASE={API_BASE} />;
       case "all-bid-products":
-        return <BidProductsOverview products={allBidProducts} />;
+        return <BidProductsOverview API_BASE={API_BASE} />;
       case "income":
         return <IncomeOverview income={income} />;
       case "winning-bids":
@@ -86,14 +75,7 @@ const AdminDashboard = () => {
       case "account":
         return <AccountSettings user={user} />;
       default:
-        return (
-          <DashboardOverview
-            allUsers={allUsers}
-            allBidProducts={allBidProducts}
-            income={income}
-            winningBids={winningBids}
-          />
-        );
+        return <DashboardOverview allUsers={allUsers} allBidProducts={allBidProducts} income={income} winningBids={winningBids} />;
     }
   };
 
@@ -113,7 +95,6 @@ const AdminDashboard = () => {
               <p className="font-semibold">{user?.role || "Administrator"}</p>
             </div>
           </div>
-
           <nav className="space-y-1">
             <NavItem icon={<BarChart3Icon />} title="Dashboard" isActive={activeSection === "dashboard"} onClick={() => setActiveSection("dashboard")} />
             <NavItem icon={<UserIcon />} title="All Users" isActive={activeSection === "all-users"} onClick={() => setActiveSection("all-users")} />
@@ -153,24 +134,257 @@ const DashboardOverview = ({ allUsers, allBidProducts, income, winningBids }) =>
   </div>
 );
 
-const UsersOverview = ({ users }) => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-xl font-bold mb-4">All Users</h2>
-    {users.length === 0 ? <p>No users found.</p> : (
-      <ul>
-        {users.map(u => <li key={u._id}>{u.firstName} {u.lastName} - {u.email}</li>)}
-      </ul>
-    )}
-  </div>
-);
+const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "buyer",
+    photo: null,
+  });
+  const [editingUser, setEditingUser] = useState(null);
+  const [preview, setPreview] = useState(null);
 
-// ----- Updated BidProductsOverview -----
-const BidProductsOverview = ({ products }) => {
-  const [allProducts, setAllProducts] = useState(products || []);
-  const API_BASE =
-    import.meta.env.MODE === "development"
-      ? "http://localhost:5001/api"
-      : "/api";
+  // Handle text input
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle image input
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setForm((prev) => ({ ...prev, photo: file }));
+    setPreview(file ? URL.createObjectURL(file) : null);
+  };
+
+  const resetForm = () => {
+    setForm({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      role: "buyer",
+      photo: null,
+    });
+    setPreview(null);
+    setEditingUser(null);
+  };
+
+  // Create user
+  const handleCreate = async () => {
+    if (!form.firstName || !form.lastName || !form.email || !form.password) {
+      return toast.error("All fields are required for new user");
+    }
+    try {
+      const formData = new FormData();
+      formData.append("firstName", form.firstName);
+      formData.append("lastName", form.lastName);
+      formData.append("email", form.email);
+      formData.append("password", form.password);
+      formData.append("role", form.role);
+      if (form.photo) formData.append("photo", form.photo);
+
+      await axios.post(`${API_BASE}/auth/admin/users`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("User created successfully");
+      resetForm();
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to create user");
+    }
+  };
+
+  // Update user
+  const handleUpdate = async () => {
+    if (!editingUser?._id) return toast.error("No user selected for update");
+
+    try {
+      const formData = new FormData();
+      formData.append("firstName", form.firstName);
+      formData.append("lastName", form.lastName);
+      formData.append("email", form.email);
+      formData.append("role", form.role);
+      if (form.photo) formData.append("photo", form.photo);
+
+      await axios.patch(`${API_BASE}/auth/admin/users/${editingUser._id}`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("User updated successfully");
+      resetForm();
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to update user");
+    }
+  };
+
+  // Delete user
+  const handleDelete = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      await axios.delete(`${API_BASE}/auth/admin/users/${userId}`, {
+        withCredentials: true,
+      });
+      toast.success("User deleted successfully");
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete user");
+    }
+  };
+
+  // Edit click
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setForm({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      password: "",
+      role: user.role || "buyer",
+      photo: null,
+    });
+    setPreview(user.photo || null);
+  };
+
+  return (
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Users Overview</h2>
+
+      {/* User Form */}
+      <div className="mb-4 space-x-2 flex items-center">
+        <input
+          name="firstName"
+          value={form.firstName}
+          onChange={handleChange}
+          placeholder="First Name"
+          className="border p-1 rounded w-1/6"
+        />
+        <input
+          name="lastName"
+          value={form.lastName}
+          onChange={handleChange}
+          placeholder="Last Name"
+          className="border p-1 rounded w-1/6"
+        />
+        <input
+          name="email"
+          value={form.email}
+          onChange={handleChange}
+          placeholder="Email"
+          className="border p-1 rounded w-1/6"
+        />
+        {!editingUser && (
+          <input
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder="Password"
+            type="password"
+            className="border p-1 rounded w-1/6"
+          />
+        )}
+        <select
+          name="role"
+          value={form.role}
+          onChange={handleChange}
+          className="border p-1 rounded w-1/6"
+        >
+          <option value="buyer">Buyer</option>
+          <option value="seller">Seller</option>
+          <option value="broker">Broker</option>
+          <option value="admin">Admin</option>
+        </select>
+        <input type="file" accept="image/*" onChange={handleFileChange} className="border p-1 rounded w-1/6" />
+
+        {preview && (
+          <img src={preview} alt="Preview" className="h-12 w-12 rounded-full object-cover" />
+        )}
+
+        {editingUser ? (
+          <>
+            <button onClick={handleUpdate} className="bg-blue-500 text-white px-2 py-1 rounded">
+              Update
+            </button>
+            <button onClick={resetForm} className="bg-gray-500 text-white px-2 py-1 rounded">
+              Cancel
+            </button>
+          </>
+        ) : (
+          <button onClick={handleCreate} className="bg-green-500 text-white px-2 py-1 rounded">
+            Create
+          </button>
+        )}
+      </div>
+
+      {/* Users Table */}
+      <table className="w-full border">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="p-2 border">Image</th>
+            <th className="p-2 border">Name</th>
+            <th className="p-2 border">Email</th>
+            <th className="p-2 border">Role</th>
+            <th className="p-2 border">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {users && users.length > 0 ? (
+            users.map((user) => (
+              <tr key={user._id} className="border">
+                {/* ✅ User avatar */}
+                <td className="p-2 border text-center">
+                  <img
+                    src={user.photo || "https://cdn-icons-png.flaticon.com/512/2202/2202112.png"}
+                    alt={`${user.firstName} ${user.lastName}`}
+                    className="h-10 w-10 rounded-full object-cover mx-auto"
+                  />
+                </td>
+                <td className="p-2 border">
+                  {user.firstName} {user.lastName}
+                </td>
+                <td className="p-2 border">{user.email}</td>
+                <td className="p-2 border">{user.role}</td>
+                <td className="p-2 border space-x-2">
+                  <button
+                    onClick={() => handleEditClick(user)}
+                    className="bg-yellow-500 text-white px-2 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(user._id)}
+                    className="bg-red-500 text-white px-2 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5" className="text-center p-2">
+                No users found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
+const BidProductsOverview = ({ API_BASE }) => {
+  const [allProducts, setAllProducts] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [commissionInput, setCommissionInput] = useState({});
 
   const fetchProducts = async () => {
     try {
@@ -178,93 +392,131 @@ const BidProductsOverview = ({ products }) => {
       setAllProducts(res.data || []);
     } catch (err) {
       console.error("Error fetching products:", err);
+      toast.error("Failed to fetch products");
     }
   };
 
-  const handleVerify = async (id) => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // --- Edit Product (unchanged) ---
+  const startEditing = (product) => {
+    setEditingProduct(product);
+    setEditTitle(product.title);
+    setEditDescription(product.description);
+    setSelectedFiles([]);
+    const initialPreviews = (product.images || []).map(img => typeof img === "string" ? img : img?.url).filter(Boolean);
+    setPreviewImages(initialPreviews);
+  };
+
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedFiles(files);
+    const filePreviews = files.map(file => URL.createObjectURL(file));
+    setPreviewImages(prev => [...prev, ...filePreviews]);
+  };
+
+  const handleEdit = async () => {
+    if (!editingProduct) return;
     try {
-      await axios.patch(`${API_BASE}/bid-products/admin/verify/${id}`, {}, { withCredentials: true });
-      toast.success("Product verified!");
+      const formData = new FormData();
+      formData.append("title", editTitle);
+      formData.append("description", editDescription);
+      selectedFiles.forEach(file => formData.append("images", file));
+
+      await axios.patch(`${API_BASE}/bid-products/admin/edit/${editingProduct._id}`, formData, { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } });
+
+      toast.success("Product updated successfully!");
+      setEditingProduct(null);
+      setSelectedFiles([]);
+      setPreviewImages([]);
       fetchProducts();
     } catch (err) {
-      console.error(err);
-      toast.error("Verification failed");
+      console.error("Error updating product:", err);
+      toast.error("Update failed");
     }
   };
 
-  const handleAddCommission = async (id) => {
-    const commission = prompt("Enter commission %:");
-    if (!commission) return;
+  // --- Delete Product ---
+    const handleDelete = async (productId) => {
+      if (!window.confirm("Are you sure you want to delete this product?")) return;
+      try {
+        await axios.delete(`${API_BASE}/bid-products/admin/products`, {
+          withCredentials: true,
+          data: { productIds: [productId] }, // <-- send as array in body
+        });
+        toast.success("Product deleted successfully");
+        setAllProducts(prev => prev.filter(p => p._id !== productId));
+      } catch (err) {
+        console.error("Delete failed:", err);
+        toast.error("Failed to delete product");
+      }
+    };
 
+  // --- Verify Product ---
+  const handleVerify = async (productId) => {
+    const commissionValue = parseFloat(commissionInput[productId]);
+    if (isNaN(commissionValue) || commissionValue < 0) {
+      toast.error("Enter a valid commission");
+      return;
+    }
     try {
-      await axios.patch(`${API_BASE}/bid-products/admin/commission/${id}`, { commission }, { withCredentials: true });
-      toast.success("Commission added!");
+      await axios.patch(`${API_BASE}/bid-products/admin/verify/${productId}`, { commission: commissionValue }, { withCredentials: true });
+      toast.success("Product verified successfully");
       fetchProducts();
     } catch (err) {
-      console.error(err);
-      toast.error("Adding commission failed");
+      console.error("Verify failed:", err);
+      toast.error("Failed to verify product");
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this product?")) return;
-
-    try {
-      await axios.delete(`${API_BASE}/bid-products/admin/delete/${id}`, { withCredentials: true });
-      toast.success("Product deleted!");
-      fetchProducts();
-    } catch (err) {
-      console.error(err);
-      toast.error("Delete failed");
-    }
+  const handleCommissionChange = (productId, value) => {
+    setCommissionInput(prev => ({ ...prev, [productId]: value }));
   };
-
-  const handleEdit = async (product) => {
-    const newTitle = prompt("Enter new title:", product.title);
-    if (!newTitle) return;
-
-    try {
-      await axios.patch(`${API_BASE}/bid-products/admin/edit/${product._id}`, { title: newTitle }, { withCredentials: true });
-      toast.success("Product updated!");
-      fetchProducts();
-    } catch (err) {
-      console.error(err);
-      toast.error("Edit failed");
-    }
-  };
-
-  if (!allProducts.length) {
-    return (
-      <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-bold mb-4">All Bid Products</h2>
-        <p>No bid products found.</p>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <Toaster position="top-right" reverseOrder={false} />
+      <Toaster position="top-right" />
       <h2 className="text-xl font-bold mb-4">All Bid Products</h2>
+
+      {editingProduct && (
+        <div className="bg-gray-100 p-4 rounded mb-4">
+          <h3 className="font-semibold mb-2">Editing: {editingProduct.title}</h3>
+          <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" className="border p-1 mb-2 w-full" />
+          <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" className="border p-1 mb-2 w-full" />
+          <input type="file" multiple onChange={handleFileChange} className="mb-2" />
+          <div className="flex gap-2 mb-2 overflow-x-auto">
+            {previewImages.map((img, i) => (
+              <img key={i} src={img instanceof File ? URL.createObjectURL(img) : img} alt="Preview" className="h-20 w-20 object-cover rounded" />
+            ))}
+          </div>
+          <div className="space-x-2">
+            <button onClick={handleEdit} className="bg-blue-500 text-white px-2 py-1 rounded">Save</button>
+            <button onClick={() => { setEditingProduct(null); setSelectedFiles([]); setPreviewImages([]); }} className="bg-gray-400 text-white px-2 py-1 rounded">Cancel</button>
+          </div>
+        </div>
+      )}
+
       <ul className="space-y-2">
         {allProducts.map((p) => (
           <li key={p._id} className="p-2 bg-gray-50 rounded flex justify-between items-center">
             <div className="flex flex-col">
               <span className="font-medium">{p.title}</span>
               <span className="text-xs text-gray-500">
-                {p.isVerified ? (
-                  <span className="text-green-600 font-semibold">Verified</span>
-                ) : (
-                  <span className="text-red-600 font-semibold">Unverified</span>
-                )}
+                {p.isVerified ? <span className="text-green-600 font-semibold">Verified</span> : <span className="text-red-600 font-semibold">Unverified</span>}
                 {p.commission && <span> | Commission: {p.commission}%</span>}
               </span>
             </div>
-            <div className="space-x-2">
-              <button onClick={() => handleEdit(p)} className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
+            <div className="space-x-2 flex items-center">
+              <button onClick={() => startEditing(p)} className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
               <button onClick={() => handleDelete(p._id)} className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-              <button onClick={() => handleVerify(p._id)} className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">Verify</button>
-              <button onClick={() => handleAddCommission(p._id)} className="px-2 py-1 text-sm bg-yellow-500 text-white rounded hover:bg-yellow-600">Add Commission</button>
+              {!p.isVerified && (
+                <>
+                  <input type="number" placeholder="Commission %" value={commissionInput[p._id] || ""} onChange={(e) => handleCommissionChange(p._id, e.target.value)} className="border p-1 w-20 text-sm" />
+                  <button onClick={() => handleVerify(p._id)} className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">Verify</button>
+                </>
+              )}
             </div>
           </li>
         ))}
@@ -283,20 +535,207 @@ const IncomeOverview = ({ income }) => (
 const WinningBidsOverview = ({ bids }) => (
   <div className="bg-white shadow rounded-lg p-6">
     <h2 className="text-xl font-bold mb-4">Winning Bids</h2>
-    {bids.length === 0 ? <p>No winning bids.</p> : (
-      <ul>{bids.map(b => <li key={b._id}>{b.productTitle} - ${b.amount}</li>)}</ul>
-    )}
+    {bids.length === 0 ? <p>No winning bids.</p> : <ul>{bids.map(b => <li key={b._id}>{b.productTitle} - ${b.amount}</li>)}</ul>}
   </div>
 );
 
-const AccountSettings = ({ user }) => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-xl font-bold mb-4">Account Settings</h2>
-    <p>Name: {user.firstName} {user.lastName}</p>
-    <p>Email: {user.email}</p>
-    <p>Role: {user.role}</p>
-  </div>
-);
+const AccountSettings = () => {
+  const { user, updateProfile, isLoading, message, error, changePassword } = useAuthStore();
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [photo, setPhoto] = useState(null);
+  const [preview, setPreview] = useState(user?.photo || null);
+
+  // 🔑 Password states
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passLoading, setPassLoading] = useState(false);
+  const [passMessage, setPassMessage] = useState("");
+  const [passError, setPassError] = useState("");
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setPhoto(file);
+    if (file) setPreview(URL.createObjectURL(file));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("firstName", firstName);
+    formData.append("lastName", lastName);
+    if (photo) formData.append("photo", photo);
+    await updateProfile(formData);
+  };
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setPassError("New passwords do not match");
+      return;
+    }
+    setPassError("");
+    setPassMessage("");
+    try {
+      setPassLoading(true);
+      const res = await changePassword(currentPassword, newPassword);
+      setPassMessage(res.message || "Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      setPassError(err || "Failed to change password");
+    } finally {
+      setPassLoading(false);
+    }
+  };
+
+  return (
+    <div className="bg-gray-50 min-h-screen p-6">
+      <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+
+      {/* Profile Info */}
+      <div className="bg-white shadow rounded-lg p-6 mb-6 flex items-center gap-4">
+        <div className="relative">
+          <img
+            src={preview || "/default-avatar.png"}
+            alt="Profile"
+            className="w-20 h-20 rounded-full object-cover border"
+          />
+          <label
+            htmlFor="photo"
+            className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white cursor-pointer hover:bg-blue-700"
+          >
+            <Camera className="w-4 h-4" />
+          </label>
+          <input
+            id="photo"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">
+            {user?.firstName} {user?.lastName}
+          </h2>
+          <p className="text-gray-500">{user?.email}</p>
+        </div>
+      </div>
+
+      {/* Personal Info Form */}
+      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 mb-6">
+        <h2 className="text-lg font-bold mb-4">Personal Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium mb-1">First Name</label>
+            <input
+              type="text"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="input input-bordered w-full"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Last Name</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              className="input input-bordered w-full"
+            />
+          </div>
+        </div>
+        <div className="mt-6">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="btn btn-primary flex items-center gap-2"
+          >
+            <Save className="w-5 h-5" />
+            {isLoading ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
+        {message && <p className="text-green-600 mt-2">{message}</p>}
+        {error && <p className="text-red-600 mt-2">{error}</p>}
+      </form>
+
+      {/* 🔑 Change Password Form */}
+     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+  <h2 className="text-xl font-semibold mb-4">Change Password</h2>
+  <form
+    onSubmit={async (e) => {
+      e.preventDefault();
+      setPassError(null);
+      setPassMessage(null);
+
+      if (newPassword !== confirmPassword) {
+        setPassError("New passwords do not match");
+        return;
+      }
+
+      try {
+        const res = await changePassword(currentPassword, newPassword);
+        setPassMessage(res?.message || "Password updated successfully");
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } catch (err) {
+        // Ensure it's always a string for React
+        setPassError(typeof err === "string" ? err : (err.message || "Failed to change password"));
+      }
+    }}
+  >
+    {/* Change Password */}
+    <div className="mb-4">
+      <label className="block text-gray-700">Current Password</label>
+      <input
+        type="password"
+        value={currentPassword}
+        onChange={(e) => setCurrentPassword(e.target.value)}
+        className="w-full p-2 border rounded-lg"
+        required
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block text-gray-700">New Password</label>
+      <input
+        type="password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full p-2 border rounded-lg"
+        required
+      />
+    </div>
+
+    <div className="mb-4">
+      <label className="block text-gray-700">Confirm New Password</label>
+      <input
+        type="password"
+        value={confirmPassword}
+        onChange={(e) => setConfirmPassword(e.target.value)}
+        className="w-full p-2 border rounded-lg"
+        required
+      />
+    </div>
+
+    {passError && <p className="text-red-600 mt-2">{passError}</p>}
+    {passMessage && <p className="text-green-600 mt-2">{passMessage}</p>}
+
+    <button
+      type="submit"
+      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+    >
+      Change Password
+    </button>
+  </form>
+</div>
+    </div>
+  );
+};
 
 const StatCard = ({ title, value }) => (
   <div className="bg-white shadow rounded-lg p-4 flex flex-col items-center justify-center">
