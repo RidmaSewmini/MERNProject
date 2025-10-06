@@ -37,7 +37,6 @@ const userSchema = new mongoose.Schema(
 		verificationToken: String,
 		verificationTokenExpiresAt: Date,
 
-		// ===== Extra fields from sample model =====
 		photo: {
 			type: String,
 			default: "https://cdn-icons-png.flaticon.com/512/2202/2202112.png",

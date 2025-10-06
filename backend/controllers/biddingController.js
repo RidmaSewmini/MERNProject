@@ -100,6 +100,22 @@ export const getBiddingHistory = asyncHandler(async (req, res) => {
 });
 
 // ==========================
+// Get all bids placed by a specific user (including winning bids)
+// ==========================
+export const getUserBids = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+
+  // Fetch all bids by this user
+  const bids = await Bidding.find({ user: userId })
+    .sort({ createdAt: -1 })
+    .populate("product", "title isSoldOut soldTo startingBid images"); // ✅ Include images here
+
+  res.status(200).json({ success: true, bids });
+});
+
+
+
+// ==========================
 // Sell product to highest bidder (after auction end time)
 // ==========================
 export const sellProduct = asyncHandler(async (req, res) => {

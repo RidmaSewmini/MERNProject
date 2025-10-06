@@ -1,5 +1,5 @@
 import express from "express";
-import { placeBid, getBiddingHistory, sellProduct } from "../controllers/biddingController.js";
+import { placeBid, getBiddingHistory, sellProduct, getUserBids } from "../controllers/biddingController.js";
 import { protect, isSeller } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -8,6 +8,9 @@ const router = express.Router();
 // Get bidding history for a product
 // ==========================
 router.get("/:productId", getBiddingHistory);
+
+// Get all bids of a specific user
+router.get("/user-bids/:userId", protect, getUserBids);
 
 // ==========================
 // Place a bid (protected route)

@@ -370,8 +370,6 @@ export const getUser = async (req, res) => {
   }
 };
 
-
-
 // Get User Balance
 export const getUserBalance = async (req, res) => {
   try {
@@ -388,24 +386,40 @@ export const getUserBalance = async (req, res) => {
   }
 };
 
-
 // Get All Users (Admin only)
 export const getAllUser = async (req, res) => {
-	try {
-		const users = await User.find().select("-password");
-		if (!users.length) {
-			return res.status(404).json({ success: false, message: "No users found" });
-		}
+  try {
+    // ✅ explicitly include the "photo" field along with other details
+    const users = await User.find().select("-password");
 
-		res.status(200).json({
-			success: true,
-			count: users.length,
-			users
-		});
-	} catch (error) {
-		console.log("Error in getAllUser ", error);
-		res.status(500).json({ success: false, message: "Server error" });
-	}
+    if (!users.length) {
+      return res.status(404).json({ success: false, message: "No users found" });
+    }
+
+    // Map users to make sure photo is always sent (fallback if missing)
+    const usersWithPhotos = users.map(user => ({
+      _id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      isVerified: user.isVerified,
+      balance: user.balance,
+      commissionBalance: user.commissionBalance,
+      photo: user.photo || "https://cdn-icons-png.flaticon.com/512/2202/2202112.png", // fallback avatar
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: usersWithPhotos.length,
+      users: usersWithPhotos
+    });
+  } catch (error) {
+    console.log("Error in getAllUser ", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 };
 
 // Estimate Income (Admin only)
@@ -418,10 +432,132 @@ export const estimateIncome = async (req, res) => {
 
 		res.status(200).json({
 			success: true,
-			commissionBalance: admin.commissionBalance
+			income: admin.commissionBalance
 		});
 	} catch (error) {
 		console.log("Error in estimateIncome ", error);
 		res.status(500).json({ success: false, message: "Server error" });
 	}
+};
+
+// Update any user (Admin)
+export const updateUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updates = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    // Handle image upload
+    if (req.file) {
+      try {
+        const uploadedImage = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: "UserProfiles",
+          resource_type: "image",
+          use_filename: true,
+          unique_filename: false,
+        });
+        user.photo = uploadedImage.secure_url;
+      } catch (error) {
+        console.error("Cloudinary upload error (updateUserByAdmin):", error);
+        return res.status(500).json({ success: false, message: "Profile image upload failed" });
+      }
+    }
+
+    // Apply other updates except password
+    Object.keys(updates).forEach(key => {
+      if (key !== "password") user[key] = updates[key];
+    });
+
+    await user.save();
+    res.status(200).json({ success: true, message: "User updated successfully", user });
+  } catch (error) {
+    console.error("updateUserByAdmin error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Delete User (Admin)
+export const deleteUserByAdmin = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    await User.findByIdAndDelete(userId);
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+  } catch (error) {
+    console.error("deleteUserByAdmin error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+// Create User (Admin)
+export const createUserByAdmin = async (req, res) => {
+  try {
+    const { firstName, lastName, email, password, role } = req.body;
+
+    if (!firstName || !lastName || !email || !password || !role) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) return res.status(400).json({ success: false, message: "Email already exists" });
+
+    const hashedPassword = await bcryptjs.hash(password, 10);
+
+    let photoUrl = "https://cdn-icons-png.flaticon.com/512/2202/2202112.png"; // default avatar
+
+    // If admin uploaded an image, push it to Cloudinary
+    if (req.file) {
+      try {
+        const uploadedImage = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: "UserProfiles",
+          resource_type: "image",
+          use_filename: true,
+          unique_filename: false,
+        });
+        photoUrl = uploadedImage.secure_url;
+      } catch (error) {
+        console.error("Cloudinary upload error (createUserByAdmin):", error);
+      }
+    }
+
+    const newUser = new User({ firstName, lastName, email, password: hashedPassword, role, photo: photoUrl });
+    await newUser.save();
+
+    res.status(201).json({ success: true, message: "User created successfully", user: newUser });
+  } catch (error) {
+    console.error("createUserByAdmin error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+//seperate change password function in dashboard 
+export const changePassword = async (req, res) => {
+  try {
+    const userId = req.user._id; // from protect middleware
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Both current and new passwords are required" });
+    }
+
+    const user = await User.findById(userId).select("+password");
+    if (!user || !user.password) {
+      return res.status(404).json({ message: "User not found or password missing" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Error in changePassword:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 };

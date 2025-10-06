@@ -194,4 +194,18 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const res = await axios.put(
+        `${API_BASE}/auth/change-password`,
+        { currentPassword, newPassword },
+        { withCredentials: true }
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error in changePassword:", error);
+      throw error.response?.data?.message || "Failed to change password";
+    }
+  },
 }));
