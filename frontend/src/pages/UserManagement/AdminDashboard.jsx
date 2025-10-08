@@ -13,6 +13,10 @@ import {
   LogOutIcon,
   CheckCircleIcon,
   Camera, Save,
+   MoreVertical, 
+   Edit, Eye, 
+   Trash2, Search, 
+   Filter, Plus ,
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -145,6 +149,16 @@ const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
   });
   const [editingUser, setEditingUser] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [showMenu, setShowMenu] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(user => 
+    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Handle text input
   const handleChange = (e) => {
@@ -170,6 +184,7 @@ const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
     });
     setPreview(null);
     setEditingUser(null);
+    setShowUserModal(false);
   };
 
   // Create user
@@ -231,6 +246,7 @@ const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
       });
       toast.success("User deleted successfully");
       fetchUsers();
+      setShowMenu(null);
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to delete user");
     }
@@ -248,131 +264,275 @@ const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
       photo: null,
     });
     setPreview(user.photo || null);
+    setShowUserModal(true);
+    setShowMenu(null);
+  };
+
+  // View profile
+  const handleViewProfile = (user) => {
+    // You can implement view profile functionality here
+    console.log("View profile:", user);
+    setShowMenu(null);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Users Overview</h2>
-
-      {/* User Form */}
-      <div className="mb-4 space-x-2 flex items-center">
-        <input
-          name="firstName"
-          value={form.firstName}
-          onChange={handleChange}
-          placeholder="First Name"
-          className="border p-1 rounded w-1/6"
-        />
-        <input
-          name="lastName"
-          value={form.lastName}
-          onChange={handleChange}
-          placeholder="Last Name"
-          className="border p-1 rounded w-1/6"
-        />
-        <input
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Email"
-          className="border p-1 rounded w-1/6"
-        />
-        {!editingUser && (
-          <input
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            placeholder="Password"
-            type="password"
-            className="border p-1 rounded w-1/6"
-          />
-        )}
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          className="border p-1 rounded w-1/6"
-        >
-          <option value="buyer">Buyer</option>
-          <option value="seller">Seller</option>
-          <option value="broker">Broker</option>
-          <option value="admin">Admin</option>
-        </select>
-        <input type="file" accept="image/*" onChange={handleFileChange} className="border p-1 rounded w-1/6" />
-
-        {preview && (
-          <img src={preview} alt="Preview" className="h-12 w-12 rounded-full object-cover" />
-        )}
-
-        {editingUser ? (
-          <>
-            <button onClick={handleUpdate} className="bg-blue-500 text-white px-2 py-1 rounded">
-              Update
+    <div className="p-6 bg-white rounded-lg shadow">
+      <Toaster position="top-right" />
+      
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">User management</h1>
+        <p className="text-gray-600 mb-6">
+          Manage your team members and their account permissions here.
+        </p>
+        
+        <div className="flex justify-between items-center">
+          <h2 className="text-lg font-semibold">All users {users.length}</h2>
+          
+          <div className="flex gap-3">
+            {/* Search */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search users..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            {/* Filter Button */}
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <Filter className="h-4 w-4" />
+              Filter
             </button>
-            <button onClick={resetForm} className="bg-gray-500 text-white px-2 py-1 rounded">
-              Cancel
+            
+            {/* Add User Button */}
+            <button 
+              onClick={() => {
+                setEditingUser(null);
+                resetForm();
+                setShowUserModal(true);
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4" />
+              Add user
             </button>
-          </>
-        ) : (
-          <button onClick={handleCreate} className="bg-green-500 text-white px-2 py-1 rounded">
-            Create
-          </button>
-        )}
+          </div>
+        </div>
       </div>
 
       {/* Users Table */}
-      <table className="w-full border">
-        <thead>
-          <tr className="bg-gray-200">
-            <th className="p-2 border">Image</th>
-            <th className="p-2 border">Name</th>
-            <th className="p-2 border">Email</th>
-            <th className="p-2 border">Role</th>
-            <th className="p-2 border">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users && users.length > 0 ? (
-            users.map((user) => (
-              <tr key={user._id} className="border">
-                {/* ✅ User avatar */}
-                <td className="p-2 border text-center">
+      <div className="border border-gray-200 rounded-lg overflow-visible"> {/* Changed overflow-hidden to overflow-visible */}
+        {/* Table Header */}
+        <div className="grid grid-cols-12 bg-gray-50 px-6 py-3 border-b border-gray-200 text-xs font-medium text-gray-500 uppercase tracking-wider">
+          <div className="col-span-5">User name</div>
+          <div className="col-span-3">Role</div>
+          <div className="col-span-2">Last active</div>
+          <div className="col-span-1">Date added</div>
+          <div className="col-span-1 text-right">Actions</div>
+        </div>
+
+        {/* Table Body */}
+        <div className="divide-y divide-gray-200 overflow-visible"> {/* Added overflow-visible here too */}
+          {filteredUsers && filteredUsers.length > 0 ? (
+            filteredUsers.map((user) => (
+              <div key={user._id} className="grid grid-cols-12 px-6 py-4 items-center hover:bg-gray-50 relative"> {/* Added relative here */}
+                {/* User Info */}
+                <div className="col-span-5 flex items-center gap-3">
                   <img
                     src={user.photo || "https://cdn-icons-png.flaticon.com/512/2202/2202112.png"}
                     alt={`${user.firstName} ${user.lastName}`}
-                    className="h-10 w-10 rounded-full object-cover mx-auto"
+                    className="h-10 w-10 rounded-full object-cover"
                   />
-                </td>
-                <td className="p-2 border">
-                  {user.firstName} {user.lastName}
-                </td>
-                <td className="p-2 border">{user.email}</td>
-                <td className="p-2 border">{user.role}</td>
-                <td className="p-2 border space-x-2">
-                  <button
-                    onClick={() => handleEditClick(user)}
-                    className="bg-yellow-500 text-white px-2 py-1 rounded"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user._id)}
-                    className="bg-red-500 text-white px-2 py-1 rounded"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {user.firstName} {user.lastName}
+                    </div>
+                    <div className="text-sm text-gray-500">{user.email}</div>
+                  </div>
+                </div>
+
+                {/* Role */}
+                <div className="col-span-3">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                    user.role === 'seller' ? 'bg-blue-100 text-blue-800' :
+                    user.role === 'broker' ? 'bg-green-100 text-green-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
+                    {user.role?.charAt(0).toUpperCase() + user.role?.slice(1)}
+                  </span>
+                </div>
+
+                {/* Last Active */}
+                <div className="col-span-2 text-sm text-gray-500">
+                  {formatDate(user.lastActive)}
+                </div>
+
+                {/* Date Added */}
+                <div className="col-span-1 text-sm text-gray-500">
+                  {formatDate(user.createdAt)}
+                </div>
+
+                {/* Actions Menu - Right aligned */}
+                <div className="col-span-1 flex justify-end">
+                  <div className="relative"> {/* Wrapped in relative container */}
+                    <button
+                      onClick={() => setShowMenu(showMenu === user._id ? null : user._id)}
+                      className="p-2 rounded hover:bg-gray-200 transition-colors"
+                    >
+                      <MoreVertical className="h-4 w-4 text-gray-600" />
+                    </button>
+
+                    {showMenu === user._id && (
+                      <div className="absolute top-full right-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                        <div className="py-1">
+                          <button
+                            onClick={() => handleViewProfile(user)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Eye className="h-4 w-4 mr-3" />
+                            View profile
+                          </button>
+                          <button
+                            onClick={() => handleEditClick(user)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            <Edit className="h-4 w-4 mr-3" />
+                            Edit details
+                          </button>
+                          <button
+                            onClick={() => handleDelete(user._id)}
+                            className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4 mr-3" />
+                            Delete user
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))
           ) : (
-            <tr>
-              <td colSpan="5" className="text-center p-2">
-                No users found
-              </td>
-            </tr>
+            <div className="px-6 py-8 text-center text-gray-500">
+              No users found
+            </div>
           )}
-        </tbody>
-      </table>
+        </div>
+      </div>
+
+      {/* Add/Edit User Modal */}
+      {showUserModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">
+              {editingUser ? "Edit User" : "Add New User"}
+            </h2>
+
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <input
+                  name="firstName"
+                  value={form.firstName}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                  className="border p-2 rounded w-1/2"
+                />
+                <input
+                  name="lastName"
+                  value={form.lastName}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                  className="border p-2 rounded w-1/2"
+                />
+              </div>
+
+              <input
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="Email"
+                className="border p-2 rounded w-full"
+              />
+
+              {!editingUser && (
+                <input
+                  name="password"
+                  value={form.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  type="password"
+                  className="border p-2 rounded w-full"
+                />
+              )}
+
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className="border p-2 rounded w-full"
+              >
+                <option value="buyer">Buyer</option>
+                <option value="seller">Seller</option>
+                <option value="broker">Broker</option>
+                <option value="admin">Admin</option>
+              </select>
+
+              <div className="flex items-center gap-4">
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  className="border p-2 rounded flex-1" 
+                />
+                {preview && (
+                  <img 
+                    src={preview} 
+                    alt="Preview" 
+                    className="h-12 w-12 rounded-full object-cover" 
+                  />
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={resetForm}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              {editingUser ? (
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Update User
+                </button>
+              ) : (
+                <button
+                  onClick={handleCreate}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Create User
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
