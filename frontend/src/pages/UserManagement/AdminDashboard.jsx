@@ -1,7 +1,8 @@
-import { useState, useEffect, react } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import AdminAllBidProducts from "../Bidding/AdminAllBidProducts";
 import { useAuthStore } from "../../store/authStore";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -70,8 +71,12 @@ const AdminDashboard = () => {
         return <DashboardOverview allUsers={allUsers} allBidProducts={allBidProducts} income={income} winningBids={winningBids} />;
       case "all-users":
         return <UsersOverview users={allUsers} fetchUsers={() => axios.get(`${API_BASE}/auth/users`, { withCredentials: true }).then(res => setAllUsers(res.data.users || []))} API_BASE={API_BASE} />;
+      case "inventory":
+        return <InventoryOverview />;
       case "all-bid-products":
-        return <BidProductsOverview API_BASE={API_BASE} />;
+        return <AdminAllBidProducts API_BASE={API_BASE} />;
+      case "rental-products":
+        return <RentalProductsOverview />;
       case "income":
         return <IncomeOverview income={income} />;
       case "winning-bids":
@@ -102,7 +107,9 @@ const AdminDashboard = () => {
           <nav className="space-y-1">
             <NavItem icon={<BarChart3Icon />} title="Dashboard" isActive={activeSection === "dashboard"} onClick={() => setActiveSection("dashboard")} />
             <NavItem icon={<UserIcon />} title="All Users" isActive={activeSection === "all-users"} onClick={() => setActiveSection("all-users")} />
+            <NavItem icon={<PackageIcon />} title="Inventory" isActive={activeSection === "inventory"} onClick={() => setActiveSection("inventory")} />
             <NavItem icon={<PackageIcon />} title="All Bid Products" isActive={activeSection === "all-bid-products"} onClick={() => setActiveSection("all-bid-products")} />
+            <NavItem icon={<PackageIcon />} title="All Rental Products" isActive={activeSection === "rental-products"} onClick={() => setActiveSection("rental-products")} />
             <NavItem icon={<CreditCardIcon />} title="Income" isActive={activeSection === "income"} onClick={() => setActiveSection("income")} />
             <NavItem icon={<CheckCircleIcon />} title="Winning Bids" isActive={activeSection === "winning-bids"} onClick={() => setActiveSection("winning-bids")} />
             <NavItem icon={<UserIcon />} title="Account Settings" isActive={activeSection === "account"} onClick={() => setActiveSection("account")} />
@@ -537,153 +544,19 @@ const UsersOverview = ({ users, fetchUsers, API_BASE }) => {
   );
 };
 
-const BidProductsOverview = ({ API_BASE }) => {
-  const [allProducts, setAllProducts] = useState([]);
-  const [editingProduct, setEditingProduct] = useState(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editDescription, setEditDescription] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [previewImages, setPreviewImages] = useState([]);
-  const [commissionInput, setCommissionInput] = useState({});
+const InventoryOverview = () => (
+  <div className="bg-white shadow rounded-lg p-6">
+    <h2 className="text-xl font-bold mb-4">Inventory</h2>
+    <p>This section will display all inventory items.</p>
+  </div>
+);
 
-  const fetchProducts = async () => {
-    try {
-      const res = await axios.get(`${API_BASE}/bid-products/admin/products`, { withCredentials: true });
-      setAllProducts(res.data || []);
-    } catch (err) {
-      console.error("Error fetching products:", err);
-      toast.error("Failed to fetch products");
-    }
-  };
-
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  // --- Edit Product (unchanged) ---
-  const startEditing = (product) => {
-    setEditingProduct(product);
-    setEditTitle(product.title);
-    setEditDescription(product.description);
-    setSelectedFiles([]);
-    const initialPreviews = (product.images || []).map(img => typeof img === "string" ? img : img?.url).filter(Boolean);
-    setPreviewImages(initialPreviews);
-  };
-
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(files);
-    const filePreviews = files.map(file => URL.createObjectURL(file));
-    setPreviewImages(prev => [...prev, ...filePreviews]);
-  };
-
-  const handleEdit = async () => {
-    if (!editingProduct) return;
-    try {
-      const formData = new FormData();
-      formData.append("title", editTitle);
-      formData.append("description", editDescription);
-      selectedFiles.forEach(file => formData.append("images", file));
-
-      await axios.patch(`${API_BASE}/bid-products/admin/edit/${editingProduct._id}`, formData, { withCredentials: true, headers: { "Content-Type": "multipart/form-data" } });
-
-      toast.success("Product updated successfully!");
-      setEditingProduct(null);
-      setSelectedFiles([]);
-      setPreviewImages([]);
-      fetchProducts();
-    } catch (err) {
-      console.error("Error updating product:", err);
-      toast.error("Update failed");
-    }
-  };
-
-  // --- Delete Product ---
-    const handleDelete = async (productId) => {
-      if (!window.confirm("Are you sure you want to delete this product?")) return;
-      try {
-        await axios.delete(`${API_BASE}/bid-products/admin/products`, {
-          withCredentials: true,
-          data: { productIds: [productId] }, // <-- send as array in body
-        });
-        toast.success("Product deleted successfully");
-        setAllProducts(prev => prev.filter(p => p._id !== productId));
-      } catch (err) {
-        console.error("Delete failed:", err);
-        toast.error("Failed to delete product");
-      }
-    };
-
-  // --- Verify Product ---
-  const handleVerify = async (productId) => {
-    const commissionValue = parseFloat(commissionInput[productId]);
-    if (isNaN(commissionValue) || commissionValue < 0) {
-      toast.error("Enter a valid commission");
-      return;
-    }
-    try {
-      await axios.patch(`${API_BASE}/bid-products/admin/verify/${productId}`, { commission: commissionValue }, { withCredentials: true });
-      toast.success("Product verified successfully");
-      fetchProducts();
-    } catch (err) {
-      console.error("Verify failed:", err);
-      toast.error("Failed to verify product");
-    }
-  };
-
-  const handleCommissionChange = (productId, value) => {
-    setCommissionInput(prev => ({ ...prev, [productId]: value }));
-  };
-
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <Toaster position="top-right" />
-      <h2 className="text-xl font-bold mb-4">All Bid Products</h2>
-
-      {editingProduct && (
-        <div className="bg-gray-100 p-4 rounded mb-4">
-          <h3 className="font-semibold mb-2">Editing: {editingProduct.title}</h3>
-          <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} placeholder="Title" className="border p-1 mb-2 w-full" />
-          <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} placeholder="Description" className="border p-1 mb-2 w-full" />
-          <input type="file" multiple onChange={handleFileChange} className="mb-2" />
-          <div className="flex gap-2 mb-2 overflow-x-auto">
-            {previewImages.map((img, i) => (
-              <img key={i} src={img instanceof File ? URL.createObjectURL(img) : img} alt="Preview" className="h-20 w-20 object-cover rounded" />
-            ))}
-          </div>
-          <div className="space-x-2">
-            <button onClick={handleEdit} className="bg-blue-500 text-white px-2 py-1 rounded">Save</button>
-            <button onClick={() => { setEditingProduct(null); setSelectedFiles([]); setPreviewImages([]); }} className="bg-gray-400 text-white px-2 py-1 rounded">Cancel</button>
-          </div>
-        </div>
-      )}
-
-      <ul className="space-y-2">
-        {allProducts.map((p) => (
-          <li key={p._id} className="p-2 bg-gray-50 rounded flex justify-between items-center">
-            <div className="flex flex-col">
-              <span className="font-medium">{p.title}</span>
-              <span className="text-xs text-gray-500">
-                {p.isVerified ? <span className="text-green-600 font-semibold">Verified</span> : <span className="text-red-600 font-semibold">Unverified</span>}
-                {p.commission && <span> | Commission: {p.commission}%</span>}
-              </span>
-            </div>
-            <div className="space-x-2 flex items-center">
-              <button onClick={() => startEditing(p)} className="px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600">Edit</button>
-              <button onClick={() => handleDelete(p._id)} className="px-2 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
-              {!p.isVerified && (
-                <>
-                  <input type="number" placeholder="Commission %" value={commissionInput[p._id] || ""} onChange={(e) => handleCommissionChange(p._id, e.target.value)} className="border p-1 w-20 text-sm" />
-                  <button onClick={() => handleVerify(p._id)} className="px-2 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600">Verify</button>
-                </>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-};
+const RentalProductsOverview = () => (
+  <div className="bg-white shadow rounded-lg p-6">
+    <h2 className="text-xl font-bold mb-4">All Rental Products</h2>
+    <p>This section will display all rental products.</p>
+  </div>
+);
 
 const IncomeOverview = ({ income }) => (
   <div className="bg-white shadow rounded-lg p-6">
@@ -706,14 +579,6 @@ const AccountSettings = () => {
   const [photo, setPhoto] = useState(null);
   const [preview, setPreview] = useState(user?.photo || null);
 
-  // 🔑 Password states
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passLoading, setPassLoading] = useState(false);
-  const [passMessage, setPassMessage] = useState("");
-  const [passError, setPassError] = useState("");
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     setPhoto(file);
@@ -727,28 +592,6 @@ const AccountSettings = () => {
     formData.append("lastName", lastName);
     if (photo) formData.append("photo", photo);
     await updateProfile(formData);
-  };
-
-  const handlePasswordChange = async (e) => {
-    e.preventDefault();
-    if (newPassword !== confirmPassword) {
-      setPassError("New passwords do not match");
-      return;
-    }
-    setPassError("");
-    setPassMessage("");
-    try {
-      setPassLoading(true);
-      const res = await changePassword(currentPassword, newPassword);
-      setPassMessage(res.message || "Password updated successfully");
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (err) {
-      setPassError(err || "Failed to change password");
-    } finally {
-      setPassLoading(false);
-    }
   };
 
   return (
@@ -821,78 +664,6 @@ const AccountSettings = () => {
         {message && <p className="text-green-600 mt-2">{message}</p>}
         {error && <p className="text-red-600 mt-2">{error}</p>}
       </form>
-
-      {/* 🔑 Change Password Form */}
-     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-  <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-  <form
-    onSubmit={async (e) => {
-      e.preventDefault();
-      setPassError(null);
-      setPassMessage(null);
-
-      if (newPassword !== confirmPassword) {
-        setPassError("New passwords do not match");
-        return;
-      }
-
-      try {
-        const res = await changePassword(currentPassword, newPassword);
-        setPassMessage(res?.message || "Password updated successfully");
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-      } catch (err) {
-        // Ensure it's always a string for React
-        setPassError(typeof err === "string" ? err : (err.message || "Failed to change password"));
-      }
-    }}
-  >
-    {/* Change Password */}
-    <div className="mb-4">
-      <label className="block text-gray-700">Current Password</label>
-      <input
-        type="password"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-        className="w-full p-2 border rounded-lg"
-        required
-      />
-    </div>
-
-    <div className="mb-4">
-      <label className="block text-gray-700">New Password</label>
-      <input
-        type="password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-        className="w-full p-2 border rounded-lg"
-        required
-      />
-    </div>
-
-    <div className="mb-4">
-      <label className="block text-gray-700">Confirm New Password</label>
-      <input
-        type="password"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        className="w-full p-2 border rounded-lg"
-        required
-      />
-    </div>
-
-    {passError && <p className="text-red-600 mt-2">{passError}</p>}
-    {passMessage && <p className="text-green-600 mt-2">{passMessage}</p>}
-
-    <button
-      type="submit"
-      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-    >
-      Change Password
-    </button>
-  </form>
-</div>
     </div>
   );
 };
