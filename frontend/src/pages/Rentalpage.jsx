@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
+ import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";   
 import Footer from "../components/Footer";  
 import Slider from "react-slick";
@@ -157,7 +157,7 @@ const showcaseItems = [
   },
 ];
 
-// Hero slides
+// Slides
 const heroSlides = [
   {
     title: "Discover the Best Tech Rentals",
@@ -200,7 +200,7 @@ const filteredItems =
       {/* Navbar */}
       <Navbar />
 
-      {/* Hero Slider */}
+      {/*Slider */}
       <section className="relative w-full h-[100vh] text-white overflow-hidden">
         <Slider {...heroSettings} className="h-full">
           {heroSlides.map((slide, index) => (
@@ -328,7 +328,7 @@ const filteredItems =
         <div className="flex justify-end mt-2">
           <button 
             className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-purple-200"
-            onClick={() => navigate("/rentalform", { state: { product: item.name } })}>
+            onClick={() => navigate("/rentalform", { state: { product: item.name, image: item.img } })}>
             <span className="relative px-3 py-1.5 transition-all ease-in duration-75 bg-gray-200 rounded-md group-hover:bg-transparent">
               Rent Now
             </span>
@@ -357,3 +357,19 @@ const filteredItems =
 export default RentalPage;
 
 
+
+
+
+
+
+
+
+/*cd "C:\Users\User\Desktop\ITP project\MERNProject\frontend"
+npm install      
+npm start         # or npm run dev 
+
+cd "C:\Users\User\Desktop\ITP project\MERNProject\backend"
+npm install       
+npm start         # or node server.js, or nodemon server.js 
+
+*/

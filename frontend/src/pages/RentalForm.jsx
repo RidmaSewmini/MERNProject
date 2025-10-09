@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import api from "../lib/axios";
+import { useLocation, useNavigate } from "react-router-dom";
 import WirelessMousemg1 from '../Asset/WirelessMouse.jpeg';
+import RFbg from '../Asset/RFbg.jpeg';
 
 const RentalForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const selectedProduct = location.state?.product || "";
+  const selectedImage = location.state?.image || WirelessMousemg1;
   
   const [formData, setFormData] = useState({
     fullName: "",
@@ -17,7 +20,7 @@ const RentalForm = () => {
     quantity: 1,
     startDate: "",
     endDate: "",
-    purpose: "",
+    Remark: "",
     terms: false,
   });
 
@@ -25,31 +28,154 @@ const RentalForm = () => {
 
   // Example base prices for products (LKR per day)
   const basePrices = {
-    "HP Pavilion Laptop": 1500,
-    "Mac Book": 2000,
-    "Curved Gaming Monitor": 800,
+    "HP Pavilion Laptop": 8500,
+    "Mac Book": 20000,
+    "Curved Gaming Monitor": 30000,
     "Wireless Keyboard": 300,
     "Wireless Mouse": 200,
-    "Bluetooth Headphones": 500,
-    "JBL bluetooth Speaker": 400,
-    "Gaming Microphone": 350,
-    "Web Cam": 300,
-    "External Hard Drive (HDD)": 400,
-    "USB-C Hub": 250,
-    "Wi-Fi Router": 500,
-    "Network Switch 8-Port": 600,
-    "Power line Adapter": 200,
-    "USB-C Ethernet Adapter": 150,
-    "Flash Drives 32GB": 100,
-    "Flash Drives 128GB": 200,
-    "Memory Card Reader": 100,
-    "Power Bank 10000mAh": 300,
-    "PowerBank 32000mAh": 500,
-    "8 Ports USB Charging Station": 400,
-    "Gaming Motherboard": 800,
-    "Gaming PC": 2000,
-    "iMac Desktop Computer": 1800,
+    "Bluetooth Headphones": 2000,
+    "JBL bluetooth Speaker": 4000,
+    "Gaming Microphone": 3500,
+    "Web Cam": 2000,
+    "External Hard Drive (HDD)": 1000,
+    "USB-C Hub": 2500,
+    "Wi-Fi Router": 3000,
+    "Network Switch 8-Port": 12000,
+    "Power line Adapter": 2000,
+    "USB-C Ethernet Adapter": 1500,
+    "Flash Drives 32GB": 500,
+    "Flash Drives 128GB": 800,
+    "Memory Card Reader": 1000,
+    "Power Bank 10000mAh": 3000,
+    "PowerBank 32000mAh": 5000,
+    "8 Ports USB Charging Station": 4000,
+    "Gaming Motherboard": 40000,
+    "Gaming PC": 30000,
+    "iMac Desktop Computer": 28000,
     Default: 1000,
+  };
+
+  // Descriptions for each product displayed under the image (bullet points)
+  const productDescriptions = {
+    "HP Pavilion Laptop": [
+      "HP Pavilion series laptop with Intel® Core™ processor.",
+      "Full HD display.",
+      "Reliable performance.",
+      "Long battery life.",
+      "Perfect for students and professionals."
+    ],
+    "Mac Book": [
+      "Apple MacBook with Retina display.",
+      "Premium aluminum build.",
+      "Smooth macOS performance.",
+      "Excellent battery life.",
+      "Ideal for creative professionals."
+    ],
+    "Curved Gaming Monitor": [
+      "Immersive wide‑angle curved display.",
+      "High refresh rate for smooth gameplay.",
+      "Vibrant colors for media and games."
+    ],
+    "Wireless Keyboard": [
+      "Ergonomic, comfortable typing.",
+      "Quiet keys.",
+      "Long battery life."
+    ],
+    "Wireless Mouse": [
+      "Ergonomic wireless design.",
+      "Precision optical tracking.",
+      "Smooth scrolling.",
+      "Long‑lasting battery."
+    ],
+    "Bluetooth Headphones": [
+      "High‑definition sound.",
+      "Noise isolation.",
+      "Cushioned ear pads for comfort."
+    ],
+    "JBL bluetooth Speaker": [
+      "Portable waterproof build.",
+      "Punchy bass and clear 360° sound.",
+      "Great indoors and outdoors."
+    ],
+    "Gaming Microphone": [
+      "USB condenser mic (HyperX/Blue Yeti class).",
+      "Crystal‑clear voice capture.",
+      "Noise reduction for streaming/meetings."
+    ],
+    "Web Cam": [
+      "Full‑HD 1080p video.",
+      "Built‑in microphone.",
+      "Plug‑and‑play for calls and streaming."
+    ],
+    "External Hard Drive (HDD)": [
+      "High‑capacity portable storage.",
+      "Durable casing.",
+      "USB 3.0 fast transfers."
+    ],
+    "USB-C Hub": [
+      "Multiport hub (HDMI/USB/card reader).",
+      "Expand laptop connectivity."
+    ],
+    "Wi‑Fi Router": [
+      "Dual‑band router with wide coverage.",
+      "Stable speeds.",
+      "Strong WPA3 security."
+    ],
+    "Network Switch 8-Port": [
+      "Unmanaged Gigabit switch.",
+      "Expand wired LAN connections."
+    ],
+    "Power line Adapter": [
+      "Extend internet via electrical wiring.",
+      "Easy setup, stable connection."
+    ],
+    "USB-C Ethernet Adapter": [
+      "USB‑C Gigabit Ethernet.",
+      "Instant stable wired internet."
+    ],
+    "Flash Drives 32GB": [
+      "Portable 32GB storage.",
+      "Reliable quick transfers."
+    ],
+    "Flash Drives 128GB": [
+      "128GB USB 3.x storage.",
+      "High‑speed transfers for large files."
+    ],
+    "Memory Card Reader": [
+      "Fast SD/microSD read & write.",
+      "Plug‑and‑play."
+    ],
+    "Power Bank 10000mAh": [
+      "10,000mAh compact power bank.",
+      "Dual output, fast charging."
+    ],
+    "PowerBank 32000mAh": [
+      "32,000mAh ultra‑high capacity.",
+      "Multiple ports for several devices."
+    ],
+    "8 Ports USB Charging Station": [
+      "8‑port USB charging hub.",
+      "Smart IC for safe charging."
+    ],
+    "Gaming Motherboard": [
+      "ASUS/MSI gaming‑grade board.",
+      "Advanced overclocking & RGB.",
+      "Multiple GPU support."
+    ],
+    "Gaming PC": [
+      "High‑performance GPU & CPU.",
+      "Fast SSD storage.",
+      "Advanced cooling for heavy workloads."
+    ],
+    "iMac Desktop Computer": [
+      "Retina 4K/5K display.",
+      "macOS ecosystem integration.",
+      "Powerful all‑in‑one workstation."
+    ],
+    Default: [
+      "Premium tech gear from trusted brands.",
+      "Available for rent for work, study, and events."
+    ]
   };
 
   // Calculate price whenever inputs change
@@ -79,46 +205,75 @@ const RentalForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.terms) {
-      alert("You must agree to the terms and conditions.");
-      return;
-    }
-    console.log("Rental Form Data:", { ...formData, price });
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.terms) {
+    alert("You must agree to the terms and conditions.");
+    return;
+  }
+
+  // Prepare data to send
+  const dataToSend = { ...formData, price };
+
+  try {
+    const { data } = await api.post("/rental", dataToSend, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
     alert("Form submitted successfully!");
-  };
+    console.log("Saved in backend:", data);
+    navigate("/rental");
+  } catch (error) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || error.message;
+    if (status === 409) {
+      alert("This item is not available for the selected dates. Please choose different dates.");
+    } else {
+      alert("Failed to submit form: " + message);
+    }
+    console.error("Error submitting form:", error);
+  }
+};
+
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="flex bg-white shadow-lg rounded-lg overflow-hidden max-w-5xl w-full">
+    <div className="min-h-screen flex items-center justify-center p-6 bg-cover bg-center" style={{ backgroundImage: `url(${RFbg})` }}>
+      <div className="relative max-w-5xl w-full">
+        <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-purple-950 via-pink-700 to-blue-900 opacity-0 blur-md" />
+        <div className="relative flex rounded-2xl overflow-hidden bg-white/20 backdrop-blur-xl border border-white/35 shadow-2xl">
         {/* Left Side - Image + Description */}
-        <div className="w-1/2 bg-gray-50 flex flex-col items-center p-6">
+        <div className="w-1/2 bg-white/5 flex flex-col items-center p-6">
           <img
-            src={WirelessMousemg1}
+            src={selectedImage}
             alt="Rental banner"
             className="w-full h-80 object-cover rounded mb-4"
           />
            {/* Product Name */}
           <h3 className="text-xl font-bold mb-2">{selectedProduct || "Select a Product"}</h3>
 
-          {/* Product Description */}
-          <p className="text-gray-700 text-center mb-2">
-            {selectedProduct 
-              ? `High-quality ${selectedProduct.toLowerCase()} available for rent. Perfect for your projects and events.`
-              : "Choose a product from our rental page to see details here."
-            }
-          </p>
+          {/* Product Description (bullet points) */}
+          {selectedProduct ? (
+            <ul className="list-disc list-inside text-sm text-gray-950 space-y-1 mb-2 text-left">
+              {(productDescriptions[selectedProduct] || productDescriptions.Default).map((point, idx) => (
+                <li key={idx}>{point}</li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-800 text-center mb-2">
+              Choose a product from our rental page to see details here.
+            </p>
+          )}
 
           {/* Price */}
-          <p className="text-lg font-semibold text-blue-600 mb-6">
+          <p className="text-lg font-semibold text-purple-500 mb-6">
             Price per day: LKR {basePrices[selectedProduct] || basePrices["Default"]}
           </p>
 
           {/* Terms & Conditions */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mt-auto">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-sm p-4 mt-auto">
             <h4 className="font-bold mb-2 text-gray-800">Terms & Conditions</h4>
-            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+            <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
               <li>Charges apply for damages or late returns.</li>
               <li>Rental must be returned by the agreed due date.</li>
               <li>Reservation cancellations are fully refundable.</li>
@@ -131,7 +286,7 @@ const RentalForm = () => {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => navigate("/rental")}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className=" text-white shadow-sm transition"
             >
               ← Back to Rental Showcase
             </button>
@@ -165,7 +320,7 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Phone</label>
+              <label className="block mb-1 font-semibold">Phone Number</label>
               <input
                 type="text"
                 name="phone"
@@ -277,12 +432,12 @@ const RentalForm = () => {
               />
             </div>
 
-            {/* Purpose */}
+            {/* Remark */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Purpose</label>
+              <label className="block mb-1 font-semibold">Remark</label>
               <textarea
-                name="purpose"
-                value={formData.purpose}
+                name="Remark"
+                value={formData.Remark}
                 onChange={handleChange}
                 className="w-full border rounded p-2"
               />
@@ -307,12 +462,13 @@ const RentalForm = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+                className="px-6 py-2 rounded-lg border border-white/30 bg-white/20 backdrop-blur-md text-white shadow-sm transition hover:bg-purple-800 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
                 Submit
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
