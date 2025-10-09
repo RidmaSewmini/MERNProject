@@ -1,36 +1,41 @@
-import { Routes, Route, Navigate } from "react-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 
-import HomePage from "./pages/HomePage";
-import CreatePage from "./pages/CreatePage";
-import NoteDetailPage from "./pages/NoteDetailPage";
-import BiddingPage from "./pages/BiddingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import UserDashboard from "./pages/UserDashboard";
-import DashboardPage from "./pages/DashboardPage";
-import EmailVerificationPage from "./pages/EmailVerificationPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import GamingLaptopsPage from "./pages/GamingLaptopsPage";
-import GamingMotherboardPage from "./pages/GamingMotherboardPage";
-import GamingMonitorPage from "./pages/GamingMonitorPage";
-import PremiumGraphicsCardPage from "./pages/PremiumGraphicsCardPage";
-import PremiumComponentPage from "./pages/PremiumComponentPage";
-import GamingPeripheralPage from "./pages/GamingPeripheralPage";
-import DesktopPCPage from "./pages/DesktopPCPage";
+// Components & Pages
+import HomePage from "./pages/HomePage.jsx";
+import LoginPage from "./pages/UserManagement/LoginPage.jsx";
+import RegisterPage from "./pages/UserManagement/RegisterPage.jsx";
+import VerifyEmailPage from "./pages/UserManagement/EmailVerificationPage.jsx";
+import ForgotPasswordPage from "./pages/UserManagement/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/UserManagement/ResetPasswordPage.jsx";
+import UserDashboard from "./pages/UserManagement/UserDashboard.jsx";
+import AdminDashboard from "./pages/UserManagement/AdminDashboard.jsx";
+import LoadingSpinner from "./components/LoadingSpinner";
+import BiddingPage from "./pages/Bidding/BiddingPage.jsx";
+import BidProductsPage from "./pages/Bidding/BidProductsPage.jsx";
+import BidProductDetailsPage from "./pages/Bidding/BidProductDetailsPage.jsx";
+import GamingLaptopsPage from "./pages/Inventory/GamingLaptopsPage.jsx";
+import GamingMotherboardPage from "./pages/Inventory/GamingMotherboardPage.jsx";
+import GamingMonitorPage from "./pages/Inventory/GamingMonitorPage.jsx";
+import PremiumGraphicsCardPage from "./pages/Inventory/PremiumGraphicsCardPage.jsx";
+import PremiumComponentPage from "./pages/Inventory/PremiumComponentPage.jsx";
+import GamingPeripheralPage from "./pages/Inventory/GamingPeripheralPage.jsx";
+import DesktopPCPage from "./pages/Inventory/DesktopPCPage.jsx";
+import RentalPage from "./pages/Rental/RentalPage.jsx";
+import RentalForm from "./pages/Rental/RentalForm.jsx";
 
-
-import RentalPage from "./pages/Rentalpage";
-import RentalForm from "./pages/RentalForm";
-
-import LoadingSpinner from "./components/LoadingSpinner"; // make sure you have this
-import toast from "react-hot-toast";
-
-// Protect routes that require authentication
+// -------------------- Protected Route --------------------
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -43,23 +48,9 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Redirect authenticated users to the home page
-const RedirectAuthenticatedUser = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
-
-  if (isAuthenticated && user?.isVerified) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
-
-const App = () => {
-  const { isCheckingAuth, checkAuth } = useAuthStore();
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+// -------------------- Admin Only Route --------------------
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
 
   if (isCheckingAuth) {
     return (
@@ -69,88 +60,84 @@ const App = () => {
     );
   }
 
-  return (
-    <div className="relative h-full w-full font-titillium">
-      <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_60%,#00FF9D40_100%)]" />
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/create" element={<CreatePage />} />
-        <Route path="/note/:id" element={<NoteDetailPage />} />
-        <Route path="/bidding" element={<BiddingPage />} />
+  if (!user?.isVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
 
-        {/* Auth routes */}
-        <Route
-          path="/login"
-          element={
-            <RedirectAuthenticatedUser>
-              <LoginPage />
-            </RedirectAuthenticatedUser>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <RedirectAuthenticatedUser>
-              <RegisterPage />
-            </RedirectAuthenticatedUser>
-          }
-        />
-        <Route
-          path="/userdashboard"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/DashboardPage"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/verify-email" element={<EmailVerificationPage />} />
+  if (user?.role !== "admin") {
+    return <Navigate to="/" replace />; // non-admins redirected home
+  }
 
-        <Route
-					path='/forgot-password'
-					element={
-						<RedirectAuthenticatedUser>
-							<ForgotPasswordPage />
-						</RedirectAuthenticatedUser>
-					}
-				/>
-
-				<Route
-					path='/reset-password/:token'
-					element={
-						<RedirectAuthenticatedUser>
-							<ResetPasswordPage />
-						</RedirectAuthenticatedUser>
-					}
-				/>
-
-        {/* Rental */}
-        <Route path="/rental" element={<RentalPage />} />
-        <Route path="/rentalform" element={<RentalForm />} />
-
-        {/* Laptops */}
-        <Route path="/laptops" element={<GamingLaptopsPage />} />
-
-        {/* catch all routes */}
-				<Route path='*' element={<Navigate to='/' replace />} />
-        
-        <Route path="/motherboard" element={<GamingMotherboardPage />} />
-        <Route path="/Monitor" element={<GamingMonitorPage />} />
-        <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
-        <Route path="/PremiumComponent" element={<PremiumComponentPage/>} />
-        <Route path="/Peripheral" element={<GamingPeripheralPage />} />
-        <Route path="/DesktopPC" element={<DesktopPCPage/>} />
-      </Routes>
-    </div>
-  );
+  return children;
 };
 
-export default App;
+// -------------------- App --------------------
+export default function App() {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
+
+  // ✅ Run checkAuth once when the app loads
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // ✅ Show global loader until checkAuth finishes
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+
+      <Route path="/bidding" element={<BiddingPage />} />
+      <Route path="/bidproducts" element={<BidProductsPage />} />
+      <Route path="/product/:id" element={<BidProductDetailsPage />} />
+      <Route path="/laptops" element={<GamingLaptopsPage />} />
+      <Route path="/motherboard" element={<GamingMotherboardPage />} />
+      <Route path="/Monitor" element={<GamingMonitorPage />} />
+      <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
+      <Route path="/PremiumComponent" element={<PremiumComponentPage />} />
+      <Route path="/Peripheral" element={<GamingPeripheralPage />} />
+      <Route path="/DesktopPC" element={<DesktopPCPage />} />
+      <Route path="/rental" element={<RentalPage />} />
+      <Route path="/rentalform" element={<RentalForm />} />
+
+      {/* User-only routes */}
+      <Route
+        path="/userdashboard"
+        element={
+          <ProtectedRoute>
+            <UserDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin-only routes */}
+      <Route
+        path="/admindashboard"
+        element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        }
+      />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
