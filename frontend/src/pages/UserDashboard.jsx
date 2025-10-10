@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
+import Inventory from "./Inventory"; 
+
 import {
   BellIcon,
   SearchIcon,
@@ -53,10 +55,10 @@ const UserDashboard = () => {
     switch (activeSection) {
       case "overview":
         return <DashboardOverview stats={stats} recentActivity={recentActivity} announcements={announcements} />;
-      case "buyback":
-        return <BuybackProgram />;
       case "insurance":
         return <InsuranceManagement />;
+      case "productlist":
+        return <Inventory />;  
       case "rentals":
         return <RentalManagement />;
       case "preorders":
@@ -139,12 +141,12 @@ const UserDashboard = () => {
                 isActive={activeSection === "overview"} 
                 onClick={() => setActiveSection("overview")} 
               />
-              <NavItem 
-                icon={<PackageIcon className="h-5 w-5" />} 
-                title="Buyback Program" 
-                isActive={activeSection === "buyback"} 
-                onClick={() => setActiveSection("buyback")} 
-              />
+             <NavItem
+                icon={<PackageIcon className="h-5 w-5" />}
+                title="Product List"
+                isActive={activeSection === "productlist"} // highlights when active
+                onClick={() => setActiveSection("productlist")} // render Inventory
+                />
               <NavItem 
                 icon={<ShieldCheckIcon className="h-5 w-5" />} 
                 title="Insurance" 

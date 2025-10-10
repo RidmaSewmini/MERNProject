@@ -20,6 +20,17 @@ import PremiumGraphicsCardPage from "./pages/PremiumGraphicsCardPage";
 import PremiumComponentPage from "./pages/PremiumComponentPage";
 import GamingPeripheralPage from "./pages/GamingPeripheralPage";
 import DesktopPCPage from "./pages/DesktopPCPage";
+import LaptopDetailPage from "./pages/LaptopDetailPage";
+import MotherboardDetailPage from "./pages/MotherboardDetailPage";
+import DesktopDetailPage from "./pages/DesktopDetailPage";
+import PeripheralDetailPage from "./pages/PeripheralDetailPage";
+import ComponentDetailPage from "./pages/ComponentDetailPage";
+import GraphicsCardDetailPage from "./pages/GraphicsCardDetailPage";
+import MonitorDetailPage from "./pages/MonitorDetailPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+
+
+
 
 
 import RentalPage from "./pages/Rentalpage";
@@ -148,7 +159,20 @@ const App = () => {
         <Route path="/PremiumComponent" element={<PremiumComponentPage/>} />
         <Route path="/Peripheral" element={<GamingPeripheralPage />} />
         <Route path="/DesktopPC" element={<DesktopPCPage/>} />
+        <Route path="/laptops/:id" element={<LaptopDetailPage />} />
+        <Route path="/motherboard/:id" element={<MotherboardDetailPage />} />
+        <Route path="/desktop/:id" element={<DesktopDetailPage />} />
+        <Route path="/peripheral/:id" element={<PeripheralDetailPage />} />
+        <Route path="/Component/:id" element={<ComponentDetailPage />} />
+        <Route path="/graphics-cards/:id" element={<GraphicsCardDetailPage />} />
+        <Route path="/monitor/:id" element={<MonitorDetailPage />} />
+        <Route path="/product/:id" element={<ProductDetailPage />} />
+        <Route path="/laptops" element={<GamingLaptopsPage />} />
+
+        
       </Routes>
+
+      
     </div>
   );
 };
