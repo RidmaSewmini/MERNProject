@@ -2,11 +2,13 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
 	try {
-		console.log("mongo_uri: ", process.env.MONGO_URI);
-		const conn = await mongoose.connect(process.env.MONGO_URI);
+		const mongoUri = process.env.MONGO_URI || "mongodb+srv://himansa:wJxWvZbUmQsdXcBu@cluster0.62suylq.mongodb.net/techspherelk_db?retryWrites=true&w=majority&appName=Cluster0";
+		console.log("mongo_uri: ", mongoUri);
+		const conn = await mongoose.connect(mongoUri);
 		console.log(`MongoDB Connected: ${conn.connection.host}`);
 	} catch (error) {
 		console.log("Error connection to MongoDB: ", error.message);
-		process.exit(1); // 1 is failure, 0 status code is success
+		console.log("Attempting to continue without database connection...");
+		// Don't exit, let the server continue running for testing
 	}
 };

@@ -41,17 +41,26 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  // frontend/authStore.js
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
       const response = await axios.post(`${API_URL}/login`, { email, password });
+
+      const user = response.data?.user || null;
       set({
-        user: response.data?.user || null,
-        isAuthenticated: !!response.data?.user,
+        user,
+        isAuthenticated: !!user,
         isLoading: false,
         error: null,
       });
-      navigate("/userdashboard");
+
+      // ✅ Redirect based on role
+      if (user?.role === "admin") {
+        window.location.href = "/admindashboard"; // admin area
+      } else {
+        window.location.href = "/userdashboard"; // normal users
+      }
     } catch (error) {
       set({
         error: error.response?.data?.message || error.message || "Error logging in",
@@ -121,6 +130,35 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+    updateProfile: async (formData) => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      // ⚡️ Must send multipart/form-data if there's a file (photo)
+      const response = await axios.put(`${API_URL}/update-profile`, formData, {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      set((state) => ({
+        user: { ...state.user, ...response.data.user }, // merge updated user
+        isAuthenticated: true,
+        isLoading: false,
+        error: null,
+        message: response.data.message || "Profile updated successfully",
+      }));
+
+      return response.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || error.message || "Error updating profile",
+      });
+      throw error;
+    }
+  },
+
   forgotPassword: async (email) => {
     set({ isLoading: true, error: null, message: null });
     try {
@@ -154,6 +192,20 @@ export const useAuthStore = create((set) => ({
         error: error.response?.data?.message || error.message || "Error resetting password",
       });
       throw error;
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const res = await axios.put(
+        `${API_BASE}/auth/change-password`,
+        { currentPassword, newPassword },
+        { withCredentials: true }
+      );
+      return res.data;
+    } catch (error) {
+      console.error("Error in changePassword:", error);
+      throw error.response?.data?.message || "Failed to change password";
     }
   },
 }));

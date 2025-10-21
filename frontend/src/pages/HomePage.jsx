@@ -128,7 +128,7 @@ const feedbacks = [
 
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen font-titillium">
       <Navbar />
       <div className="flex-1 ">
         <div className="w-full">

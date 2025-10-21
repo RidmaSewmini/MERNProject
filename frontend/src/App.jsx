@@ -1,47 +1,61 @@
-import { Routes, Route, Navigate } from "react-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "./store/authStore";
 
-import HomePage from "./pages/HomePage";
-import CreatePage from "./pages/CreatePage";
-import NoteDetailPage from "./pages/NoteDetailPage";
-import BiddingPage from "./pages/BiddingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import UserDashboard from "./pages/UserDashboard";
-import DashboardPage from "./pages/DashboardPage";
-import EmailVerificationPage from "./pages/EmailVerificationPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import ResetPasswordPage from "./pages/ResetPasswordPage";
-import GamingLaptopsPage from "./pages/GamingLaptopsPage";
-import GamingMotherboardPage from "./pages/GamingMotherboardPage";
-import GamingMonitorPage from "./pages/GamingMonitorPage";
-import PremiumGraphicsCardPage from "./pages/PremiumGraphicsCardPage";
-import PremiumComponentPage from "./pages/PremiumComponentPage";
-import GamingPeripheralPage from "./pages/GamingPeripheralPage";
-import DesktopPCPage from "./pages/DesktopPCPage";
-import LaptopDetailPage from "./pages/LaptopDetailPage";
-import MotherboardDetailPage from "./pages/MotherboardDetailPage";
-import DesktopDetailPage from "./pages/DesktopDetailPage";
-import PeripheralDetailPage from "./pages/PeripheralDetailPage";
-import ComponentDetailPage from "./pages/ComponentDetailPage";
-import GraphicsCardDetailPage from "./pages/GraphicsCardDetailPage";
-import MonitorDetailPage from "./pages/MonitorDetailPage";
-import ProductDetailPage from "./pages/ProductDetailPage";
+// Components & Pages
+import HomePage from "./pages/HomePage.jsx";
 
+// User Management
+import LoginPage from "./pages/UserManagement/LoginPage.jsx";
+import RegisterPage from "./pages/UserManagement/RegisterPage.jsx";
+import VerifyEmailPage from "./pages/UserManagement/EmailVerificationPage.jsx";
+import ForgotPasswordPage from "./pages/UserManagement/ForgotPasswordPage.jsx";
+import ResetPasswordPage from "./pages/UserManagement/ResetPasswordPage.jsx";
+import UserDashboard from "./pages/UserManagement/UserDashboard.jsx";
+import AdminDashboard from "./pages/UserManagement/AdminDashboard.jsx";
 
+// Bidding
+import BiddingPage from "./pages/Bidding/BiddingPage.jsx";
+import BidProductsPage from "./pages/Bidding/BidProductsPage.jsx";
+import BidProductDetailsPage from "./pages/Bidding/BidProductDetailsPage.jsx";
 
+// Inventory
+import GamingLaptopsPage from "./pages/Inventory/GamingLaptopsPage.jsx";
+import GamingMotherboardPage from "./pages/Inventory/GamingMotherboardPage.jsx";
+import GamingMonitorPage from "./pages/Inventory/GamingMonitorPage.jsx";
+import PremiumGraphicsCardPage from "./pages/Inventory/PremiumGraphicsCardPage.jsx";
+import PremiumComponentPage from "./pages/Inventory/PremiumComponentPage.jsx";
+import GamingPeripheralPage from "./pages/Inventory/GamingPeripheralPage.jsx";
+import DesktopPCPage from "./pages/Inventory/DesktopPCPage.jsx";
 
+// Rentals
+import RentalPage from "./pages/Rental/Rentalpage.jsx";
+import RentalForm from "./pages/Rental/RentalForm.jsx";
 
-import RentalPage from "./pages/Rentalpage";
-import RentalForm from "./pages/RentalForm";
+// Product Details
+import LaptopDetailPage from "./pages/LaptopDetailPage.jsx";
+import MotherboardDetailPage from "./pages/MotherboardDetailPage.jsx";
+import DesktopDetailPage from "./pages/DesktopDetailPage.jsx";
+import PeripheralDetailPage from "./pages/PeripheralDetailPage.jsx";
+import ComponentDetailPage from "./pages/ComponentDetailPage.jsx";
+import GraphicsCardDetailPage from "./pages/GraphicsCardDetailPage.jsx";
+import MonitorDetailPage from "./pages/MonitorDetailPage.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 
-import LoadingSpinner from "./components/LoadingSpinner"; // make sure you have this
-import toast from "react-hot-toast";
+// Utilities
+import LoadingSpinner from "./components/LoadingSpinner";
 
-// Protect routes that require authentication
+// -------------------- Protected Route --------------------
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -54,19 +68,36 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Redirect authenticated users to the home page
-const RedirectAuthenticatedUser = ({ children }) => {
-  const { isAuthenticated, user } = useAuthStore();
+// -------------------- Admin Only Route --------------------
+const AdminRoute = ({ children }) => {
+  const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
 
-  if (isAuthenticated && user?.isVerified) {
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user?.isVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+
+  if (user?.role !== "admin") {
     return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
-const App = () => {
-  const { isCheckingAuth, checkAuth } = useAuthStore();
+// -------------------- App --------------------
+export default function App() {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
 
   useEffect(() => {
     checkAuth();
@@ -81,100 +112,49 @@ const App = () => {
   }
 
   return (
-    <div className="relative h-full w-full font-titillium">
-      <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_60%,#00FF9D40_100%)]" />
+    <Routes>
+      {/* Public routes */}
+      <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/create" element={<CreatePage />} />
-        <Route path="/note/:id" element={<NoteDetailPage />} />
-        <Route path="/bidding" element={<BiddingPage />} />
+      <Route path="/bidding" element={<BiddingPage />} />
+      <Route path="/bidproducts" element={<BidProductsPage />} />
+      <Route path="/product/:id" element={<BidProductDetailsPage />} />
 
-        {/* Auth routes */}
-        <Route
-          path="/login"
-          element={
-            <RedirectAuthenticatedUser>
-              <LoginPage />
-            </RedirectAuthenticatedUser>
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            <RedirectAuthenticatedUser>
-              <RegisterPage />
-            </RedirectAuthenticatedUser>
-          }
-        />
-        <Route
-          path="/userdashboard"
-          element={
-            <ProtectedRoute>
-              <UserDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/DashboardPage"
-          element={
-            <ProtectedRoute>
-              <DashboardPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/verify-email" element={<EmailVerificationPage />} />
+      <Route path="/laptops" element={<GamingLaptopsPage />} />
+      <Route path="/motherboard" element={<GamingMotherboardPage />} />
+      <Route path="/monitor" element={<GamingMonitorPage />} />
+      <Route path="/premiumgraphicscard" element={<PremiumGraphicsCardPage />} />
+      <Route path="/premiumcomponent" element={<PremiumComponentPage />} />
+      <Route path="/peripheral" element={<GamingPeripheralPage />} />
+      <Route path="/desktoppc" element={<DesktopPCPage />} />
 
-        <Route
-					path='/forgot-password'
-					element={
-						<RedirectAuthenticatedUser>
-							<ForgotPasswordPage />
-						</RedirectAuthenticatedUser>
-					}
-				/>
+      {/* Product detail pages */}
+      <Route path="/laptops/:id" element={<LaptopDetailPage />} />
+      <Route path="/motherboard/:id" element={<MotherboardDetailPage />} />
+      <Route path="/desktop/:id" element={<DesktopDetailPage />} />
+      <Route path="/peripheral/:id" element={<PeripheralDetailPage />} />
+      <Route path="/component/:id" element={<ComponentDetailPage />} />
+      <Route path="/graphics-cards/:id" element={<GraphicsCardDetailPage />} />
+      <Route path="/monitor/:id" element={<MonitorDetailPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
 
-				<Route
-					path='/reset-password/:token'
-					element={
-						<RedirectAuthenticatedUser>
-							<ResetPasswordPage />
-						</RedirectAuthenticatedUser>
-					}
-				/>
+      {/* Protected rental routes */}
+      <Route path="/rental" element={<ProtectedRoute><RentalPage /></ProtectedRoute>} />
+      <Route path="/rentalform" element={<ProtectedRoute><RentalForm /></ProtectedRoute>} />
 
-        {/* Rental */}
-        <Route path="/rental" element={<RentalPage />} />
-        <Route path="/rentalform" element={<RentalForm />} />
+      {/* User-only routes */}
+      <Route path="/userdashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
 
-        {/* Laptops */}
-        <Route path="/laptops" element={<GamingLaptopsPage />} />
+      {/* Admin-only routes */}
+      <Route path="/admindashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
-        {/* catch all routes */}
-				<Route path='*' element={<Navigate to='/' replace />} />
-        
-        <Route path="/motherboard" element={<GamingMotherboardPage />} />
-        <Route path="/Monitor" element={<GamingMonitorPage />} />
-        <Route path="/PremiumGraphicsCard" element={<PremiumGraphicsCardPage />} />
-        <Route path="/PremiumComponent" element={<PremiumComponentPage/>} />
-        <Route path="/Peripheral" element={<GamingPeripheralPage />} />
-        <Route path="/DesktopPC" element={<DesktopPCPage/>} />
-        <Route path="/laptops/:id" element={<LaptopDetailPage />} />
-        <Route path="/motherboard/:id" element={<MotherboardDetailPage />} />
-        <Route path="/desktop/:id" element={<DesktopDetailPage />} />
-        <Route path="/peripheral/:id" element={<PeripheralDetailPage />} />
-        <Route path="/Component/:id" element={<ComponentDetailPage />} />
-        <Route path="/graphics-cards/:id" element={<GraphicsCardDetailPage />} />
-        <Route path="/monitor/:id" element={<MonitorDetailPage />} />
-        <Route path="/product/:id" element={<ProductDetailPage />} />
-        <Route path="/laptops" element={<GamingLaptopsPage />} />
-
-        
-      </Routes>
-
-      
-    </div>
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
-};
-
-export default App;
+}

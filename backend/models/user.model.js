@@ -36,12 +36,30 @@ const userSchema = new mongoose.Schema(
 		resetPasswordExpiresAt: Date,
 		verificationToken: String,
 		verificationTokenExpiresAt: Date,
+
+		photo: {
+			type: String,
+			default: "https://cdn-icons-png.flaticon.com/512/2202/2202112.png",
+		},
+		role: {
+			type: String,
+			enum: ["admin", "seller", "buyer"],
+			default: "buyer",
+		},
+		commissionBalance: {
+			type: Number,
+			default: 0,
+		},
+		balance: {
+			type: Number,
+			default: 0,
+		},
 	},
 	{ timestamps: true }
 );
 
 // Add virtual for full name
-userSchema.virtual('name').get(function() {
+userSchema.virtual("name").get(function () {
 	return `${this.firstName} ${this.lastName}`;
 });
 
