@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import RentalUserDashboard from "../Rental/RentalUserDashboard";
+
 import { useAuthStore } from "../../store/authStore";
 import {
   BarChart3Icon,
@@ -366,7 +368,7 @@ const UserDashboard = () => {
       case "insurance":
         return <InsuranceManagement />;
       case "rentals":
-        return <RentalManagement />;
+        return <RentalUserDashboard />;
       case "preorders":
         return <PreOrderManagement />;
       case "services":

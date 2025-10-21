@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "mailtrap": "^4.2.0",
     "mongoose": "^8.18.1",
     "multer": "^2.0.2",
+    "node-cron": "^4.2.1",
     "path": "^0.12.7"
   },
   "devDependencies": {

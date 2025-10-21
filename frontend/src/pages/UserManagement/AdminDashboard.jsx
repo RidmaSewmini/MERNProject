@@ -3,6 +3,7 @@ import axios from "axios";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import AdminAllBidProducts from "../Bidding/AdminAllBidProducts";
+import AllRentalProducts from "../Rental/RentalProductsOverview";
 import { useAuthStore } from "../../store/authStore";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -76,7 +77,7 @@ const AdminDashboard = () => {
       case "all-bid-products":
         return <AdminAllBidProducts API_BASE={API_BASE} />;
       case "rental-products":
-        return <RentalProductsOverview />;
+        return <AllRentalProducts />;
       case "income":
         return <IncomeOverview income={income} />;
       case "winning-bids":
@@ -551,12 +552,6 @@ const InventoryOverview = () => (
   </div>
 );
 
-const RentalProductsOverview = () => (
-  <div className="bg-white shadow rounded-lg p-6">
-    <h2 className="text-xl font-bold mb-4">All Rental Products</h2>
-    <p>This section will display all rental products.</p>
-  </div>
-);
 
 const IncomeOverview = ({ income }) => (
   <div className="bg-white shadow rounded-lg p-6">
