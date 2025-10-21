@@ -13,6 +13,7 @@ const rentalFormSchema = new mongoose.Schema(
     endDate: { type: Date, required: true },
     price: { type: Number, required: true },
     remark: { type: String, default: "" },
+    status: { type: String, enum: ["Pending", "Ongoing", "Returned", "Cancelled"], default: "Pending" }
   },
   { timestamps: true }
 );

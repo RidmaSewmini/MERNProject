@@ -9,8 +9,11 @@ import cloudinary from "cloudinary";
 import { connectDB } from "./db/connectDB.js";
 import authRoutes from "./routes/auth.route.js"
 import rentalRoutes from "./routes/RentalForm.route.js";
+import stockRoutes from "./routes/stockRoutes.js";
+import rentalShowcaseRoutes from "./routes/rentalShowcaseRoutes.js"; 
 import bidProductRoutes from "./routes/bidProductRoute.js"; 
 import biddingRoutes from "./routes/biddingRoute.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 //import "./utils/auctionScheduler.js";
 
 // import error middleware
@@ -54,10 +57,6 @@ app.use(
   })
 );
 
-
-app.use("/api/auth", authRoutes);
-app.use("/api/rental", rentalRoutes);
-
 app.use(express.json());
 app.use(cookieParser());
 
@@ -65,6 +64,10 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);  
 app.use("/api/bid-products", bidProductRoutes); 
 app.use("/api/bidding", biddingRoutes); // <-- Mount bidding routes
+app.use("/api/rental", rentalRoutes);
+app.use("/api/stock", stockRoutes);
+app.use("/api/rental-items", rentalShowcaseRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // static uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -72,6 +75,11 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 // Home route
 app.get("/", (req, res) => {
   res.send("Home Page");
+});
+
+// Test route
+app.get("/test", (req, res) => {
+  res.json({ message: "Server is working", timestamp: new Date() });
 });
 
 // error handler (always last)

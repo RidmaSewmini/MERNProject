@@ -22,7 +22,7 @@ import PremiumGraphicsCardPage from "./pages/Inventory/PremiumGraphicsCardPage.j
 import PremiumComponentPage from "./pages/Inventory/PremiumComponentPage.jsx";
 import GamingPeripheralPage from "./pages/Inventory/GamingPeripheralPage.jsx";
 import DesktopPCPage from "./pages/Inventory/DesktopPCPage.jsx";
-import RentalPage from "./pages/Rental/RentalPage.jsx";
+import RentalPage from "./pages/Rental/Rentalpage.jsx";
 import RentalForm from "./pages/Rental/RentalForm.jsx";
 
 // -------------------- Protected Route --------------------
@@ -113,8 +113,23 @@ export default function App() {
       <Route path="/PremiumComponent" element={<PremiumComponentPage />} />
       <Route path="/Peripheral" element={<GamingPeripheralPage />} />
       <Route path="/DesktopPC" element={<DesktopPCPage />} />
-      <Route path="/rental" element={<RentalPage />} />
-      <Route path="/rentalform" element={<RentalForm />} />
+      {/* Protected rental routes */}
+      <Route
+        path="/rental"
+        element={
+          <ProtectedRoute>
+            <RentalPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/rentalform"
+        element={
+          <ProtectedRoute>
+            <RentalForm />
+          </ProtectedRoute>
+        }
+      />
 
       {/* User-only routes */}
       <Route

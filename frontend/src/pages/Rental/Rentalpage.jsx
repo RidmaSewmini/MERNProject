@@ -1,5 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom"; 
+import api from "../../lib/axios";
+import toast from "react-hot-toast";
 
 import Navbar from "../../components/Navbar";   
 import Footer from "../../components/Footer";  
@@ -36,7 +38,7 @@ import GamingPCmg1 from '../../Asset/GamingPC.jpg';
 import BGimage01mg1 from '../../Asset/BGimage01.jpeg';
 import BGimage02mg1 from '../../Asset/BGimage02.jpg';
 
-const showcaseItems = [
+const staticShowcaseItems = [
   {
     name: "Wireless Mouse",
     img: WirelessMousemg1,
@@ -176,8 +178,50 @@ const heroSlides = [
 
 const RentalPage = () => {
   const [activeTab, setActiveTab] = useState("computing");
+  const [showcaseItems, setShowcaseItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [stockByName, setStockByName] = useState({}); // maps productName -> availableQuantity
   const navigate = useNavigate();
+
+  // Fetch showcase items from API
+  useEffect(() => {
+    const fetchShowcaseItems = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/rental-items");
+        setShowcaseItems(response.data || []);
+      } catch (error) {
+        console.error("Error fetching showcase items:", error);
+        toast.error("Failed to load showcase items");
+        // Fallback to static data if API fails
+        setShowcaseItems(staticShowcaseItems);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShowcaseItems();
+  }, []);
   
+  // Fetch stock availability
+  useEffect(() => {
+    const fetchStock = async () => {
+      try {
+        const res = await api.get("/stock");
+        const list = Array.isArray(res.data) ? res.data : [];
+        const nameToAvailable = {};
+        for (const s of list) {
+          if (s && s.productName) {
+            nameToAvailable[s.productName] = typeof s.availableQuantity === "number" ? s.availableQuantity : 0;
+          }
+        }
+        setStockByName(nameToAvailable);
+      } catch (e) {
+        // silent fail; badge will fall back to unknown
+      }
+    };
+    fetchStock();
+  }, []);
+
 
   const heroSettings = {
     dots: true,
@@ -191,10 +235,10 @@ const RentalPage = () => {
   };
 
   //Filter items by active tab (show all if "all")
-const filteredItems =
-  activeTab === "all"
-    ? showcaseItems
-    : showcaseItems.filter((item) => item.category === activeTab);
+  const filteredItems =
+    activeTab === "all"
+      ? showcaseItems
+      : showcaseItems.filter((item) => item.category === activeTab);
 
 
   return (
@@ -312,13 +356,35 @@ const filteredItems =
 
 
         {/* Grid of showcase items */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {filteredItems.map((item, index) => (
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="text-gray-500">Loading showcase items...</div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {filteredItems.map((item, index) => (
              <div
               key={index}
               className="relative rounded-2xl overflow-hidden border border-gray-300 shadow-md hover:shadow-lg transition-transform hover:scale-95">
+        {/* Availability badge */}
+        {(() => {
+          const available = stockByName[item.name];
+          const unknown = typeof available === "undefined";
+          const inStock = !unknown && available > 0;
+          const badgeText = unknown ? "Check availability" : inStock ? `In stock: ${available}` : "Out of stock";
+          const badgeClass = unknown
+            ? "bg-gray-600 text-white"
+            : inStock
+            ? "bg-purple-500 text-white"
+            : "bg-red-600 text-white";
+          return (
+            <div className={`absolute top-2 left-2 px-2 py-1 rounded text-sm font-semibold ${badgeClass}`}>
+              {badgeText}
+            </div>
+          );
+        })()}
         <img
-          src={item.img}
+          src={item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001${item.image}`) : item.img}
           alt={item.name}
           className="w-full h-60 object-cover"
         />
@@ -330,7 +396,7 @@ const filteredItems =
         <div className="flex justify-end mt-2">
           <button 
             className="relative inline-flex items-center justify-center p-0.5 overflow-hidden text-sm font-medium text-gray-900 rounded-lg group bg-gradient-to-br from-purple-500 to-pink-500 group-hover:from-purple-500 group-hover:to-pink-500 hover:text-white focus:ring-4 focus:outline-none focus:ring-purple-200"
-            onClick={() => navigate("/rentalform", { state: { product: item.name, image: item.img } })}>
+            onClick={() => navigate("/rentalform", { state: { product: item.name, image: item.image ? (item.image.startsWith('http') ? item.image : `http://localhost:5001${item.image}`) : item.img } })}>
             <span className="relative px-3 py-1.5 transition-all ease-in duration-75 bg-gray-200 rounded-md group-hover:bg-transparent">
               Rent Now
             </span>
@@ -340,7 +406,8 @@ const filteredItems =
       </div>
     </div>
           ))}
-        </div>
+          </div>
+        )}
       </main>
 
       {/* View all */}
@@ -368,10 +435,12 @@ export default RentalPage;
 
 /*cd "C:\Users\User\Desktop\ITP project\MERNProject\frontend"
 npm install      
-npm start         # or npm run dev 
-
+npm start        
 cd "C:\Users\User\Desktop\ITP project\MERNProject\backend"
 npm install       
-npm start         # or node server.js, or nodemon server.js 
+npm start        
+
+ # or npm run dev  
+ cd backend; node index.js
 
 */

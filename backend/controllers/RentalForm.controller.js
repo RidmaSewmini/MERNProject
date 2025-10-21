@@ -1,8 +1,9 @@
 import RentalForm from "../models/RentalForm.model.js";
+import Stock from "../models/stockModel.js";
 
 const basePrices = {
   "HP Pavilion Laptop": 8500,
-  "Mac Book": 20000,
+  "MacBook": 20000,
   "Curved Gaming Monitor": 30000,
   "Wireless Keyboard": 300,
   "Wireless Mouse": 200,
@@ -28,40 +29,16 @@ const basePrices = {
   Default: 1000,
 };
 
-// Product stock (units available for the same time period)
-const productStock = {
-  "HP Pavilion Laptop": 5,
-  "Mac Book": 3,
-  "Curved Gaming Monitor": 4,
-  "Wireless Keyboard": 10,
-  "Wireless Mouse": 12,
-  "Bluetooth Headphones": 8,
-  "JBL bluetooth Speaker": 6,
-  "Gaming Microphone": 5,
-  "Web Cam": 7,
-  "External Hard Drive (HDD)": 10,
-  "USB-C Hub": 10,
-  "Wi-Fi Router": 6,
-  "Network Switch 8-Port": 5,
-  "Power line Adapter": 8,
-  "USB-C Ethernet Adapter": 7,
-  "Flash Drives 32GB": 20,
-  "Flash Drives 128GB": 15,
-  "Memory Card Reader": 10,
-  "Power Bank 10000mAh": 10,
-  "PowerBank 32000mAh": 6,
-  "8 Ports USB Charging Station": 6,
-  "Gaming Motherboard": 4,
-  "Gaming PC": 3,
-  "iMac Desktop Computer": 2,
-  Default: 5,
-};
+// NOTE: We now use the persistent Stock collection instead of hardcoded product stock
 
 export const createRentalForm = async (req, res) => {
   try {
     console.log("Received request body:", req.body); // <-- check what frontend sends
 
     const body = { ...req.body };
+    
+    // Use authenticated user's email instead of form data
+    body.email = req.user.email;
 
     // Normalize field casing for remark
     if (body.Remark && !body.remark) {
@@ -85,31 +62,40 @@ export const createRentalForm = async (req, res) => {
       return res.status(400).json({ message: "endDate must be after startDate" });
     }
 
-    // Stock/availability check by summing overlapping bookings' quantities
-    console.log(`Checking availability for ${body.product} from ${start.toISOString()} to ${end.toISOString()}`);
+    // Helper to escape regex from product name
+    const escapeRegex = (s = "") => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    const totalUnits = productStock[body.product] ?? productStock.Default;
+    // First try: case-insensitive exact match
+    const nameRegex = new RegExp(`^${escapeRegex(body.product)}$`, "i");
 
-    // Two ranges overlap if existing.start <= requested.end AND existing.end >= requested.start
-    const overlappingBookings = await RentalForm.find({
-      product: body.product,
-      startDate: { $lte: end },
-      endDate: { $gte: start },
-    });
-
-    const bookedQuantity = overlappingBookings.reduce((sum, b) => sum + (Number(b.quantity) || 0), 0);
-    const availableUnits = Math.max(0, totalUnits - bookedQuantity);
-
-    console.log(
-      `Stock check for ${body.product}: total=${totalUnits}, booked=${bookedQuantity}, available=${availableUnits}, requested=${quantityNumber}`
+    let updatedStock = await Stock.findOneAndUpdate(
+      { productName: { $regex: nameRegex }, availableQuantity: { $gte: quantityNumber } },
+      { $inc: { availableQuantity: -quantityNumber } },
+      { new: true }
     );
 
-    if (quantityNumber > availableUnits) {
-      const requestedStart = start.toLocaleDateString();
-      const requestedEnd = end.toLocaleDateString();
+    // Second try: normalized match (remove spaces and non-alphanumeric)
+    if (!updatedStock) {
+      const normalize = (s = "") => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const desired = normalize(body.product);
+      // Find candidate
+      const candidate = await Stock.findOne({});
+      // Use aggregation to find matching by normalization across all stock docs
+      // Fallback: manual pass if small collections
+      const allStocks = await Stock.find({}, { productName: 1, availableQuantity: 1 });
+      const matched = allStocks.find((st) => normalize(st.productName) === desired);
+      if (matched) {
+        updatedStock = await Stock.findOneAndUpdate(
+          { _id: matched._id, availableQuantity: { $gte: quantityNumber } },
+          { $inc: { availableQuantity: -quantityNumber } },
+          { new: true }
+        );
+      }
+    }
+
+    if (!updatedStock) {
       return res.status(409).json({
-        message: `Insufficient stock for ${body.product} between ${requestedStart} and ${requestedEnd}. Available: ${availableUnits}, requested: ${quantityNumber}. Please reduce quantity or choose different dates.`,
-        available: availableUnits,
+        message: `Insufficient stock or product not found for ${body.product}. Requested: ${quantityNumber}.`,
       });
     }
 
@@ -123,10 +109,11 @@ export const createRentalForm = async (req, res) => {
     body.quantity = quantityNumber;
     body.startDate = start;
     body.endDate = end;
+    body.status = "Pending"; // Set initial status
 
     const form = new RentalForm(body);
     await form.save();
-    res.status(201).json({ message: "Rental form submitted successfully", form });
+    res.status(201).json({ message: "Rental form submitted successfully", form, stock: updatedStock });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
@@ -135,6 +122,20 @@ export const createRentalForm = async (req, res) => {
 export const getAllRentalForms = async (req, res) => {
   try {
     const forms = await RentalForm.find();
+    res.status(200).json(forms);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get rentals by authenticated user
+export const getUserRentals = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const userEmail = req.user.email;
+    
+    // Find rentals by user email
+    const forms = await RentalForm.find({ email: userEmail }).sort({ createdAt: -1 });
     res.status(200).json(forms);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -166,6 +167,79 @@ export const deleteRentalForm = async (req, res) => {
     const deletedForm = await RentalForm.findByIdAndDelete(req.params.id);
     if (!deletedForm) return res.status(404).json({ message: "Form not found" });
     res.status(200).json({ message: "Form deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateRentalStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { id } = req.params;
+
+    if (!["Pending", "Ongoing", "Returned", "Cancelled"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status. Must be Pending, Ongoing, Returned, or Cancelled" });
+    }
+
+    const updatedForm = await RentalForm.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedForm) return res.status(404).json({ message: "Rental form not found" });
+
+    res.status(200).json({ message: "Status updated successfully", form: updatedForm });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Cancel rental (only for pending rentals)
+export const cancelRental = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the rental form
+    const rentalForm = await RentalForm.findById(id);
+    if (!rentalForm) {
+      return res.status(404).json({ message: "Rental form not found" });
+    }
+
+    // Check if rental is pending
+    if (rentalForm.status !== "Pending") {
+      return res.status(400).json({ 
+        message: "Only pending rentals can be cancelled",
+        currentStatus: rentalForm.status
+      });
+    }
+
+    // Update status to cancelled
+    const updatedForm = await RentalForm.findByIdAndUpdate(
+      id,
+      { status: "Cancelled" },
+      { new: true }
+    );
+
+    // Restore stock availability
+    const requestedProductName = updatedForm.product;
+    const quantityToRestore = updatedForm.quantity;
+    
+    // Find and update stock
+    const stockItem = await Stock.findOne({ productName: new RegExp(`^${requestedProductName}$`, 'i') });
+    
+    if (stockItem) {
+      await Stock.findByIdAndUpdate(
+        stockItem._id,
+        { $inc: { availableQuantity: quantityToRestore } },
+        { new: true }
+      );
+    }
+
+    res.status(200).json({ 
+      message: "Rental cancelled successfully", 
+      form: updatedForm 
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

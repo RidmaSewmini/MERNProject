@@ -4,7 +4,7 @@ import multer from "multer";
 // ===== Multer Disk Storage =====
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads"); // save in /uploads folder
+    cb(null, "./uploads"); // save in /uploads folder
   },
   filename: function (req, file, cb) {
     const uniqueName =
@@ -15,10 +15,12 @@ const storage = multer.diskStorage({
 
 // ===== File Filter =====
 function fileFilter(req, file, cb) {
-  if (["image/png", "image/jpg", "image/jpeg"].includes(file.mimetype)) {
+  console.log("File filter - mimetype:", file.mimetype);
+  if (["image/png", "image/jpg", "image/jpeg", "image/avif"].includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Invalid file type. Only PNG, JPG, JPEG allowed."), false);
+    console.log("Invalid file type:", file.mimetype);
+    cb(new Error("Invalid file type. Only PNG, JPG, JPEG, AVIF allowed."), false);
   }
 }
 

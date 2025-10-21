@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
-import api from "../lib/axios";
+import api from "../../lib/axios";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 import WirelessMousemg1 from '../../Asset/WirelessMouse.jpeg';
-import RFbg from '../Asset/RFbg.jpeg';
+import RFbg from '../../Asset/RFbg.jpeg';
 
 
 const RentalForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const selectedProduct = location.state?.product || "";
   const selectedImage = location.state?.image || WirelessMousemg1;
   
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
     phone: "",
     nic: "",
     address: "",
@@ -26,11 +27,47 @@ const RentalForm = () => {
   });
 
   const [price, setPrice] = useState(0);
+  const [perDayPrice, setPerDayPrice] = useState(0);
+  const [productDetails, setProductDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Example base prices for products (LKR per day)
+  // Fetch product details from database when product is selected
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      const currentName = selectedProduct || formData.product;
+      if (currentName) {
+        try {
+          setLoading(true);
+          const response = await api.get("/rental-items");
+          const products = response.data || [];
+          const product = products.find(p => p.name === currentName);
+          
+          if (product) {
+            setProductDetails(product);
+            setPerDayPrice(Number(product.pricePerDay) || 0);
+          } else {
+            // Fallback to static data if not found in database
+            const fallback = basePrices[currentName] || basePrices["Default"];
+            setPerDayPrice(fallback);
+          }
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+          // Fallback to static data on error
+          const fallback = basePrices[currentName] || basePrices["Default"];
+          setPerDayPrice(fallback);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProductDetails();
+  }, [selectedProduct, formData.product]);
+
+  // Example base prices for products (LKR per day) - fallback data
   const basePrices = {
     "HP Pavilion Laptop": 8500,
-    "Mac Book": 20000,
+    "MacBook": 20000,
     "Curved Gaming Monitor": 30000,
     "Wireless Keyboard": 300,
     "Wireless Mouse": 200,
@@ -179,7 +216,7 @@ const RentalForm = () => {
     ]
   };
 
-  // Calculate price whenever inputs change
+  // Calculate price whenever inputs change (uses perDayPrice from backend when available)
   useEffect(() => {
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
@@ -189,14 +226,13 @@ const RentalForm = () => {
       );
 
       if (days > 0) {
-        const basePrice =
-          basePrices[formData.product] || basePrices["Default"];
-        setPrice(basePrice * formData.quantity * days);
+        const dayPrice = Number(perDayPrice) || 0;
+        setPrice(dayPrice * (Number(formData.quantity) || 1) * days);
       } else {
         setPrice(0);
       }
     }
-  }, [formData.startDate, formData.endDate, formData.product, formData.quantity]);
+  }, [formData.startDate, formData.endDate, formData.product, formData.quantity, perDayPrice]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -229,7 +265,7 @@ const RentalForm = () => {
     const status = error?.response?.status;
     const message = error?.response?.data?.message || error.message;
     if (status === 409) {
-      alert("This item is not available for the selected dates. Please choose different dates.");
+      alert("This item is not available in the stock right now.");
     } else {
       alert("Failed to submit form: " + message);
     }
@@ -248,20 +284,26 @@ const RentalForm = () => {
         {/* Left Side - Image + Description */}
         <div className="w-1/2 bg-white/5 flex flex-col items-center p-6">
           <img
-            src={selectedImage}
+            src={productDetails && productDetails.image ? productDetails.image : selectedImage}
             alt="Rental banner"
             className="w-full h-80 object-cover rounded mb-4"
           />
            {/* Product Name */}
           <h3 className="text-xl font-bold mb-2">{selectedProduct || "Select a Product"}</h3>
 
-          {/* Product Description (bullet points) */}
+          {/* Product Description */}
           {selectedProduct ? (
-            <ul className="list-disc list-inside text-sm text-gray-950 space-y-1 mb-2 text-left">
-              {(productDescriptions[selectedProduct] || productDescriptions.Default).map((point, idx) => (
-                <li key={idx}>{point}</li>
-              ))}
-            </ul>
+            <div className="text-sm text-gray-950 mb-2 text-left">
+              {productDetails && productDetails.description ? (
+                <p className="mb-2">{productDetails.description}</p>
+              ) : (
+                <ul className="list-disc list-inside space-y-1">
+                  {(productDescriptions[selectedProduct] || productDescriptions.Default).map((point, idx) => (
+                    <li key={idx}>{point}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
           ) : (
             <p className="text-gray-800 text-center mb-2">
               Choose a product from our rental page to see details here.
@@ -270,7 +312,7 @@ const RentalForm = () => {
 
           {/* Price */}
           <p className="text-lg font-semibold text-purple-500 mb-6">
-            Price per day: LKR {basePrices[selectedProduct] || basePrices["Default"]}
+            Price per day: LKR {perDayPrice}
           </p>
 
           {/* Terms & Conditions */}
@@ -299,7 +341,7 @@ const RentalForm = () => {
           <form onSubmit={handleSubmit}>
             {/* Personal Info */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Full Name</label>
+              <label className="block mb-1 font-semibold text-black">Full Name</label>
               <input
                 type="text"
                 name="fullName"
@@ -311,19 +353,21 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Email</label>
+              <label className="block mb-1 font-semibold text-black">Email Address</label>
               <input
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
+                value={user?.email || ""}
+                className="w-full border rounded p-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+                disabled
+                readOnly
               />
+              <p className="text-sm text-gray-400 mt-1">
+                Email cannot be changed
+              </p>
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Phone Number</label>
+              <label className="block mb-1 font-semibold text-black">Phone Number</label>
               <input
                 type="text"
                 name="phone"
@@ -335,7 +379,7 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">NIC Number</label>
+              <label className="block mb-1 font-semibold text-black">NIC Number</label>
               <input
                 type="text"
                 name="nic"
@@ -347,7 +391,7 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Address</label>
+              <label className="block mb-1 font-semibold text-black">Address</label>
               <textarea
                 name="address"
                 value={formData.address}
@@ -359,7 +403,7 @@ const RentalForm = () => {
 
             {/* Product */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Product</label>
+              <label className="block mb-1 font-semibold text-black">Product</label>
               {selectedProduct ? (
                 <input
                   type="text"
@@ -378,16 +422,20 @@ const RentalForm = () => {
                   required
                 >
                   <option value="">Select a product</option>
-                  {Object.keys(basePrices).filter(key => key !== "Default").map(product => (
-                    <option key={product} value={product}>{product}</option>
-                  ))}
+                  {productDetails ? (
+                    <option value={productDetails.name}>{productDetails.name}</option>
+                  ) : (
+                    Object.keys(basePrices).filter(key => key !== "Default").map(product => (
+                      <option key={product} value={product}>{product}</option>
+                    ))
+                  )}
                 </select>
               )}
             </div>
 
             {/* Quantity */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Quantity</label>
+              <label className="block mb-1 font-semibold text-black">Quantity</label>
               <input
                 type="number"
                 name="quantity"
@@ -399,34 +447,37 @@ const RentalForm = () => {
               />
             </div>
 
-            {/* Rental Dates */}
-            <div className="mb-4">
-              <label className="block mb-1 font-semibold">Start Date</label>
-              <input
-                type="date"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-            </div>
+           {/* Rental Dates */}
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold text-black">Start Date</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  min={new Date().toISOString().split("T")[0]} // ⬅️ disables past days
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block mb-1 font-semibold">End Date</label>
-              <input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold text-black">End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={formData.startDate || new Date().toISOString().split("T")[0]} // ⬅️ can't pick before start date
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
+
 
             {/* Auto-Calculated Price */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Total Price (LKR)</label>
+              <label className="block mb-1 font-semibold text-black">Total Price (LKR)</label>
               <input
                 type="text"
                 value={price}
@@ -437,7 +488,7 @@ const RentalForm = () => {
 
             {/* Remark */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Remark</label>
+              <label className="block mb-1 font-semibold text-black">Remark</label>
               <textarea
                 name="Remark"
                 value={formData.Remark}
@@ -448,7 +499,7 @@ const RentalForm = () => {
 
             {/* Terms */}
             <div className="mb-4">
-              <label className="inline-flex items-center">
+              <label className="inline-flex items-center text-black">
                 <input
                   type="checkbox"
                   name="terms"
