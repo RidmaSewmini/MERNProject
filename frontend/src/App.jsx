@@ -11,6 +11,8 @@ import ForgotPasswordPage from "./pages/UserManagement/ForgotPasswordPage.jsx";
 import ResetPasswordPage from "./pages/UserManagement/ResetPasswordPage.jsx";
 import UserDashboard from "./pages/UserManagement/UserDashboard.jsx";
 import AdminDashboard from "./pages/UserManagement/AdminDashboard.jsx";
+import SellerDashboard from "./pages/UserManagement/SellerDashboard.jsx";
+import SellerLoginPage from "./pages/UserManagement/SellerLoginPage.jsx";
 import LoadingSpinner from "./components/LoadingSpinner";
 import BiddingPage from "./pages/Bidding/BiddingPage.jsx";
 import BidProductsPage from "./pages/Bidding/BidProductsPage.jsx";
@@ -24,6 +26,8 @@ import GamingPeripheralPage from "./pages/Inventory/GamingPeripheralPage.jsx";
 import DesktopPCPage from "./pages/Inventory/DesktopPCPage.jsx";
 import RentalPage from "./pages/Rental/RentalPage.jsx";
 import RentalForm from "./pages/Rental/RentalForm.jsx";
+import SubscriptionPage from "./pages/Payment/SubscriptionPage.jsx";
+import PaymentSuccess from "./pages/Payment/PaymentSuccess.jsx";
 
 // -------------------- Protected Route --------------------
 const ProtectedRoute = ({ children }) => {
@@ -75,6 +79,33 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// -------------------- Seller Only Route -------------------- ✅ Added
+const SellerRoute = ({ children }) => {
+  const { isAuthenticated, user, isCheckingAuth } = useAuthStore();
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!user?.isVerified) {
+    return <Navigate to="/verify-email" replace />;
+  }
+
+  if (user?.role !== "seller") {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 // -------------------- App --------------------
 export default function App() {
   const { checkAuth, isCheckingAuth } = useAuthStore();
@@ -98,6 +129,7 @@ export default function App() {
       {/* Public routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/seller-login" element={<SellerLoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -115,6 +147,8 @@ export default function App() {
       <Route path="/DesktopPC" element={<DesktopPCPage />} />
       <Route path="/rental" element={<RentalPage />} />
       <Route path="/rentalform" element={<RentalForm />} />
+      <Route path="/subscription" element={<SubscriptionPage />} />
+      <Route path="/payment-success" element={<PaymentSuccess />} />
 
       {/* User-only routes */}
       <Route
@@ -133,6 +167,16 @@ export default function App() {
           <AdminRoute>
             <AdminDashboard />
           </AdminRoute>
+        }
+      />
+
+      {/* ✅ Seller-only route */}
+      <Route
+        path="/sellerdashboard"
+        element={
+          <SellerRoute>
+            <SellerDashboard />
+          </SellerRoute>
         }
       />
 

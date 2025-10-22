@@ -142,7 +142,33 @@ export const getAllProductsOfUser = async (req, res) => {
       .sort("-createdAt")
       .populate("user", "name email");
 
-    res.status(200).json(products);
+    if (!products.length) {
+      return res.status(404).json({ success: false, message: "No products found" });
+    }
+
+    // ✅ Map each product to include a safe image URL (with fallback)
+    const productsWithImages = products.map((product) => {
+      const firstImage = product.images?.[0];
+
+      // Determine proper image URL (Cloudinary or local upload)
+      let imageUrl = "https://cdn-icons-png.flaticon.com/512/1160/1160040.png"; // fallback image
+      if (firstImage?.filePath) {
+        if (firstImage.filePath.startsWith("http")) {
+          // Cloudinary or external image
+          imageUrl = firstImage.filePath;
+        } else {
+          // Local upload (adjust to your backend URL)
+          imageUrl = `${process.env.BACKEND_URL || "http://localhost:5001"}/uploads/${firstImage.filePath}`;
+        }
+      }
+
+      return {
+        ...product.toObject(),
+        imageUrl,
+      };
+    });
+
+    res.status(200).json(productsWithImages);
   } catch (error) {
     console.error("Error fetching user's products:", error);
     res.status(500).json({ success: false, message: "Server error" });
@@ -169,31 +195,50 @@ export const getWonProducts = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
+    const { deleteImages } = req.body; // Array of image _id's to delete
     const product = await BidProduct.findById(id);
 
     if (!product) {
       return res.status(404).json({ success: false, message: "Product not found" });
     }
+
+    // ✅ Prevent editing if product is verified
+    if (product.isVerified) {
+      return res.status(403).json({
+        success: false,
+        message: "Cannot edit verified product",
+      });
+    }
+
+    // Check if user owns the product
     if (product.user.toString() !== req.user._id.toString()) {
       return res.status(401).json({ success: false, message: "User not authorized" });
     }
 
     const updates = req.body;
 
+    // 1️⃣ Delete selected images
+    if (deleteImages && Array.isArray(deleteImages)) {
+      for (const imgId of deleteImages) {
+        const imgToDelete = product.images.find(img => img._id.toString() === imgId);
+        if (imgToDelete) {
+          if (imgToDelete.public_id) {
+            try {
+              await cloudinary.v2.uploader.destroy(imgToDelete.public_id);
+            } catch (err) {
+              console.error(`Error deleting Cloudinary image ${imgToDelete.public_id}:`, err);
+            }
+          }
+          product.images = product.images.filter(img => img._id.toString() !== imgId);
+        }
+      }
+    }
+
+    // 2️⃣ Upload new images
     let imageFiles = [];
     if (req.files && req.files.length > 0) {
       try {
-        // Remove old images from Cloudinary if they exist
-        if (product.images && product.images.length > 0) {
-          for (const img of product.images) {
-            if (img.public_id) {
-              await cloudinary.v2.uploader.destroy(img.public_id);
-            }
-          }
-        }
-
-        // Upload new images
-        const uploadPromises = req.files.map((file) =>
+        const uploadPromises = req.files.map(file =>
           cloudinary.v2.uploader.upload(file.path, {
             folder: "Bidding/BidProducts",
             resource_type: "image",
@@ -219,11 +264,15 @@ export const updateProduct = async (req, res) => {
       }
     }
 
+    // Merge existing images (after deletions) with new images
+    const finalImages = [...product.images, ...imageFiles];
+
+    // 3️⃣ Update other fields + final images
     const updatedProduct = await BidProduct.findByIdAndUpdate(
       id,
       {
         ...updates,
-        images: imageFiles.length > 0 ? imageFiles : product.images,
+        images: finalImages,
       },
       { new: true, runValidators: true }
     );
