@@ -8,12 +8,19 @@ import cloudinary from "cloudinary";
 import session from "express-session";
 import passport from "passport";
 
-import { connectDB } from "./db/connectDB.js";
+// ====== Routes ======
+import productRoutes from "./routes/product.routes.js";
 import authRoutes from "./routes/auth.route.js";
-import bidProductRoutes from "./routes/bidProductRoute.js"; 
+import rentalRoutes from "./routes/RentalForm.route.js";
+import stockRoutes from "./routes/stockRoutes.js";
+import rentalShowcaseRoutes from "./routes/rentalShowcaseRoutes.js";
+import bidProductRoutes from "./routes/bidProductRoute.js";
 import biddingRoutes from "./routes/biddingRoute.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
-// import "./utils/auctionScheduler.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
+
+// ====== Database & Middleware ======
+import { connectDB } from "./db/connectDB.js";
 import { errorHandler } from "./middleware/errorHandlerMiddleware.js";
 
 // ✅ Import Passport configuration
@@ -32,31 +39,32 @@ cloudinary.v2.config({
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ===== Fix __dirname in ES modules =====
+// ===== Fix __dirname for ES modules =====
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===== Middlewares =====
+// ===== CORS =====
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173"], // frontend dev URL
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
 
 app.use(cookieParser());
 
-// ✅ Add express-session and passport initialization (Google OAuth)
+// ===== Session & Passport (Google OAuth) =====
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Handle CORS in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
@@ -64,8 +72,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ===== Stripe Webhook Route (BEFORE express.json() middleware) =====
-// This route needs raw body for signature verification
+// ===== Stripe Webhook (raw body required) =====
 app.post(
   "/api/subscription/webhook",
   express.raw({ type: "application/json" }),
@@ -75,28 +82,52 @@ app.post(
   }
 );
 
-// ===== JSON Middleware for all other routes =====
+// ===== JSON Middleware (after webhook) =====
 app.use(express.json());
 
-// ===== Routes =====
-app.use("/api/auth", authRoutes);  
-app.use("/api/bid-products", bidProductRoutes); 
-app.use("/api/bidding", biddingRoutes); 
-app.use("/api/subscription", subscriptionRoutes);
+// ===== Optional Request Logger =====
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 
-// ===== Static Uploads Folder =====
+// ===== Static Folder for Uploads =====
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ===== Home Route =====
+// ===== API Routes =====
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/bid-products", bidProductRoutes);
+app.use("/api/bidding", biddingRoutes);
+app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/rental", rentalRoutes);
+app.use("/api/stock", stockRoutes);
+app.use("/api/rental-items", rentalShowcaseRoutes);
+app.use("/api/upload", uploadRoutes);
+
+// ===== Test & Home Routes =====
 app.get("/", (req, res) => {
   res.send("Home Page");
 });
 
-// ===== Error Handler (always last) =====
+app.get("/test", (req, res) => {
+  res.json({ message: "Server is working", timestamp: new Date() });
+});
+
+// ===== Error Handler (must be last) =====
 app.use(errorHandler);
 
 // ===== Start Server =====
-app.listen(PORT, () => {
-  connectDB();
-  console.log(`Server is running on port: ${PORT}`);
-});
+const startServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on port: ${PORT}`);
+    });
+  } catch (err) {
+    console.error("❌ Failed to start server:", err.message);
+    process.exit(1);
+  }
+};
+
+startServer();

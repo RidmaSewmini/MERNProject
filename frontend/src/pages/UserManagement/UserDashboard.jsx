@@ -5,6 +5,7 @@ import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import UserDBImg1 from "../../Asset/Dashboard/userdbImg1.png";
 import Product1 from "../../Asset/Dashboard/product1.jpg";
+import RentalUserDashboard from "../Rental/RentalUserDashboard";
 import { useAuthStore } from "../../store/authStore";
 import {
   BarChart3Icon,
@@ -972,7 +973,7 @@ const UserDashboard = () => {
       case "insurance":
         return <InsuranceManagement />;
       case "rentals":
-        return <RentalManagement />;
+        return <RentalUserDashboard />;
       case "preorders":
         return <PreOrderManagement />;
       case "services":

@@ -4,6 +4,8 @@ import { useAuthStore } from "./store/authStore";
 
 // Components & Pages
 import HomePage from "./pages/HomePage.jsx";
+
+// User Management
 import LoginPage from "./pages/UserManagement/LoginPage.jsx";
 import RegisterPage from "./pages/UserManagement/RegisterPage.jsx";
 import VerifyEmailPage from "./pages/UserManagement/EmailVerificationPage.jsx";
@@ -14,9 +16,13 @@ import AdminDashboard from "./pages/UserManagement/AdminDashboard.jsx";
 import SellerDashboard from "./pages/UserManagement/SellerDashboard.jsx";
 import SellerLoginPage from "./pages/UserManagement/SellerLoginPage.jsx";
 import LoadingSpinner from "./components/LoadingSpinner";
+
+// Bidding
 import BiddingPage from "./pages/Bidding/BiddingPage.jsx";
 import BidProductsPage from "./pages/Bidding/BidProductsPage.jsx";
 import BidProductDetailsPage from "./pages/Bidding/BidProductDetailsPage.jsx";
+
+// Inventory
 import GamingLaptopsPage from "./pages/Inventory/GamingLaptopsPage.jsx";
 import GamingMotherboardPage from "./pages/Inventory/GamingMotherboardPage.jsx";
 import GamingMonitorPage from "./pages/Inventory/GamingMonitorPage.jsx";
@@ -24,10 +30,25 @@ import PremiumGraphicsCardPage from "./pages/Inventory/PremiumGraphicsCardPage.j
 import PremiumComponentPage from "./pages/Inventory/PremiumComponentPage.jsx";
 import GamingPeripheralPage from "./pages/Inventory/GamingPeripheralPage.jsx";
 import DesktopPCPage from "./pages/Inventory/DesktopPCPage.jsx";
-import RentalPage from "./pages/Rental/RentalPage.jsx";
+
+// Rentals
+import RentalPage from "./pages/Rental/Rentalpage.jsx";
 import RentalForm from "./pages/Rental/RentalForm.jsx";
 import SubscriptionPage from "./pages/Payment/SubscriptionPage.jsx";
 import PaymentSuccess from "./pages/Payment/PaymentSuccess.jsx";
+
+// Product Details
+import LaptopDetailPage from "./pages/LaptopDetailPage.jsx";
+import MotherboardDetailPage from "./pages/MotherboardDetailPage.jsx";
+import DesktopDetailPage from "./pages/DesktopDetailPage.jsx";
+import PeripheralDetailPage from "./pages/PeripheralDetailPage.jsx";
+import ComponentDetailPage from "./pages/ComponentDetailPage.jsx";
+import GraphicsCardDetailPage from "./pages/GraphicsCardDetailPage.jsx";
+import MonitorDetailPage from "./pages/MonitorDetailPage.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
+
+// Utilities
+import LoadingSpinner from "./components/LoadingSpinner";
 
 // -------------------- Protected Route --------------------
 const ProtectedRoute = ({ children }) => {
@@ -73,7 +94,7 @@ const AdminRoute = ({ children }) => {
   }
 
   if (user?.role !== "admin") {
-    return <Navigate to="/" replace />; // non-admins redirected home
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -110,12 +131,10 @@ const SellerRoute = ({ children }) => {
 export default function App() {
   const { checkAuth, isCheckingAuth } = useAuthStore();
 
-  // ✅ Run checkAuth once when the app loads
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // ✅ Show global loader until checkAuth finishes
   if (isCheckingAuth) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -138,6 +157,7 @@ export default function App() {
       <Route path="/bidding" element={<BiddingPage />} />
       <Route path="/bidproducts" element={<BidProductsPage />} />
       <Route path="/product/:id" element={<BidProductDetailsPage />} />
+
       <Route path="/laptops" element={<GamingLaptopsPage />} />
       <Route path="/motherboard" element={<GamingMotherboardPage />} />
       <Route path="/Monitor" element={<GamingMonitorPage />} />
@@ -145,30 +165,28 @@ export default function App() {
       <Route path="/PremiumComponent" element={<PremiumComponentPage />} />
       <Route path="/Peripheral" element={<GamingPeripheralPage />} />
       <Route path="/DesktopPC" element={<DesktopPCPage />} />
-      <Route path="/rental" element={<RentalPage />} />
-      <Route path="/rentalform" element={<RentalForm />} />
       <Route path="/subscription" element={<SubscriptionPage />} />
       <Route path="/payment-success" element={<PaymentSuccess />} />
 
+      {/* Product detail pages */}
+      <Route path="/laptops/:id" element={<LaptopDetailPage />} />
+      <Route path="/motherboard/:id" element={<MotherboardDetailPage />} />
+      <Route path="/desktop/:id" element={<DesktopDetailPage />} />
+      <Route path="/peripheral/:id" element={<PeripheralDetailPage />} />
+      <Route path="/component/:id" element={<ComponentDetailPage />} />
+      <Route path="/graphics-cards/:id" element={<GraphicsCardDetailPage />} />
+      <Route path="/monitor/:id" element={<MonitorDetailPage />} />
+      <Route path="/product/:id" element={<ProductDetailPage />} />
+
+      {/* Protected rental routes */}
+      <Route path="/rental" element={<ProtectedRoute><RentalPage /></ProtectedRoute>} />
+      <Route path="/rentalform" element={<ProtectedRoute><RentalForm /></ProtectedRoute>} />
+
       {/* User-only routes */}
-      <Route
-        path="/userdashboard"
-        element={
-          <ProtectedRoute>
-            <UserDashboard />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/userdashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
 
       {/* Admin-only routes */}
-      <Route
-        path="/admindashboard"
-        element={
-          <AdminRoute>
-            <AdminDashboard />
-          </AdminRoute>
-        }
-      />
+      <Route path="/admindashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
       {/* ✅ Seller-only route */}
       <Route

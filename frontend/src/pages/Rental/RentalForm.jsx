@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router";
+import api from "../../lib/axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore } from "../../store/authStore";
 import WirelessMousemg1 from '../../Asset/WirelessMouse.jpeg';
+import RFbg from '../../Asset/RFbg.jpeg';
+
 
 const RentalForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuthStore();
   const selectedProduct = location.state?.product || "";
+  const selectedImage = location.state?.image || WirelessMousemg1;
   
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "",
     phone: "",
     nic: "",
     address: "",
@@ -17,42 +22,201 @@ const RentalForm = () => {
     quantity: 1,
     startDate: "",
     endDate: "",
-    purpose: "",
+    Remark: "",
     terms: false,
   });
 
   const [price, setPrice] = useState(0);
+  const [perDayPrice, setPerDayPrice] = useState(0);
+  const [productDetails, setProductDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Example base prices for products (LKR per day)
+  // Fetch product details from database when product is selected
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      const currentName = selectedProduct || formData.product;
+      if (currentName) {
+        try {
+          setLoading(true);
+          const response = await api.get("/rental-items");
+          const products = response.data || [];
+          const product = products.find(p => p.name === currentName);
+          
+          if (product) {
+            setProductDetails(product);
+            setPerDayPrice(Number(product.pricePerDay) || 0);
+          } else {
+            // Fallback to static data if not found in database
+            const fallback = basePrices[currentName] || basePrices["Default"];
+            setPerDayPrice(fallback);
+          }
+        } catch (error) {
+          console.error("Error fetching product details:", error);
+          // Fallback to static data on error
+          const fallback = basePrices[currentName] || basePrices["Default"];
+          setPerDayPrice(fallback);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchProductDetails();
+  }, [selectedProduct, formData.product]);
+
+  // Example base prices for products (LKR per day) - fallback data
   const basePrices = {
-    "HP Pavilion Laptop": 1500,
-    "Mac Book": 2000,
-    "Curved Gaming Monitor": 800,
+    "HP Pavilion Laptop": 8500,
+    "MacBook": 20000,
+    "Curved Gaming Monitor": 30000,
     "Wireless Keyboard": 300,
     "Wireless Mouse": 200,
-    "Bluetooth Headphones": 500,
-    "JBL bluetooth Speaker": 400,
-    "Gaming Microphone": 350,
-    "Web Cam": 300,
-    "External Hard Drive (HDD)": 400,
-    "USB-C Hub": 250,
-    "Wi-Fi Router": 500,
-    "Network Switch 8-Port": 600,
-    "Power line Adapter": 200,
-    "USB-C Ethernet Adapter": 150,
-    "Flash Drives 32GB": 100,
-    "Flash Drives 128GB": 200,
-    "Memory Card Reader": 100,
-    "Power Bank 10000mAh": 300,
-    "PowerBank 32000mAh": 500,
-    "8 Ports USB Charging Station": 400,
-    "Gaming Motherboard": 800,
-    "Gaming PC": 2000,
-    "iMac Desktop Computer": 1800,
+    "Bluetooth Headphones": 2000,
+    "JBL bluetooth Speaker": 4000,
+    "Gaming Microphone": 3500,
+    "Web Cam": 2000,
+    "External Hard Drive (HDD)": 1000,
+    "USB-C Hub": 2500,
+    "Wi-Fi Router": 3000,
+    "Network Switch 8-Port": 12000,
+    "Power line Adapter": 2000,
+    "USB-C Ethernet Adapter": 1500,
+    "Flash Drives 32GB": 500,
+    "Flash Drives 128GB": 800,
+    "Memory Card Reader": 1000,
+    "Power Bank 10000mAh": 3000,
+    "PowerBank 32000mAh": 5000,
+    "8 Ports USB Charging Station": 4000,
+    "Gaming Motherboard": 40000,
+    "Gaming PC": 30000,
+    "iMac Desktop Computer": 28000,
     Default: 1000,
   };
 
-  // Calculate price whenever inputs change
+  // Descriptions for each product displayed under the image (bullet points)
+  const productDescriptions = {
+    "HP Pavilion Laptop": [
+      "HP Pavilion series laptop with Intel® Core™ processor.",
+      "Full HD display.",
+      "Reliable performance.",
+      "Long battery life.",
+      "Perfect for students and professionals."
+    ],
+    "Mac Book": [
+      "Apple MacBook with Retina display.",
+      "Premium aluminum build.",
+      "Smooth macOS performance.",
+      "Excellent battery life.",
+      "Ideal for creative professionals."
+    ],
+    "Curved Gaming Monitor": [
+      "Immersive wide‑angle curved display.",
+      "High refresh rate for smooth gameplay.",
+      "Vibrant colors for media and games."
+    ],
+    "Wireless Keyboard": [
+      "Ergonomic, comfortable typing.",
+      "Quiet keys.",
+      "Long battery life."
+    ],
+    "Wireless Mouse": [
+      "Ergonomic wireless design.",
+      "Precision optical tracking.",
+      "Smooth scrolling.",
+      "Long‑lasting battery."
+    ],
+    "Bluetooth Headphones": [
+      "High‑definition sound.",
+      "Noise isolation.",
+      "Cushioned ear pads for comfort."
+    ],
+    "JBL bluetooth Speaker": [
+      "Portable waterproof build.",
+      "Punchy bass and clear 360° sound.",
+      "Great indoors and outdoors."
+    ],
+    "Gaming Microphone": [
+      "USB condenser mic (HyperX/Blue Yeti class).",
+      "Crystal‑clear voice capture.",
+      "Noise reduction for streaming/meetings."
+    ],
+    "Web Cam": [
+      "Full‑HD 1080p video.",
+      "Built‑in microphone.",
+      "Plug‑and‑play for calls and streaming."
+    ],
+    "External Hard Drive (HDD)": [
+      "High‑capacity portable storage.",
+      "Durable casing.",
+      "USB 3.0 fast transfers."
+    ],
+    "USB-C Hub": [
+      "Multiport hub (HDMI/USB/card reader).",
+      "Expand laptop connectivity."
+    ],
+    "Wi‑Fi Router": [
+      "Dual‑band router with wide coverage.",
+      "Stable speeds.",
+      "Strong WPA3 security."
+    ],
+    "Network Switch 8-Port": [
+      "Unmanaged Gigabit switch.",
+      "Expand wired LAN connections."
+    ],
+    "Power line Adapter": [
+      "Extend internet via electrical wiring.",
+      "Easy setup, stable connection."
+    ],
+    "USB-C Ethernet Adapter": [
+      "USB‑C Gigabit Ethernet.",
+      "Instant stable wired internet."
+    ],
+    "Flash Drives 32GB": [
+      "Portable 32GB storage.",
+      "Reliable quick transfers."
+    ],
+    "Flash Drives 128GB": [
+      "128GB USB 3.x storage.",
+      "High‑speed transfers for large files."
+    ],
+    "Memory Card Reader": [
+      "Fast SD/microSD read & write.",
+      "Plug‑and‑play."
+    ],
+    "Power Bank 10000mAh": [
+      "10,000mAh compact power bank.",
+      "Dual output, fast charging."
+    ],
+    "PowerBank 32000mAh": [
+      "32,000mAh ultra‑high capacity.",
+      "Multiple ports for several devices."
+    ],
+    "8 Ports USB Charging Station": [
+      "8‑port USB charging hub.",
+      "Smart IC for safe charging."
+    ],
+    "Gaming Motherboard": [
+      "ASUS/MSI gaming‑grade board.",
+      "Advanced overclocking & RGB.",
+      "Multiple GPU support."
+    ],
+    "Gaming PC": [
+      "High‑performance GPU & CPU.",
+      "Fast SSD storage.",
+      "Advanced cooling for heavy workloads."
+    ],
+    "iMac Desktop Computer": [
+      "Retina 4K/5K display.",
+      "macOS ecosystem integration.",
+      "Powerful all‑in‑one workstation."
+    ],
+    Default: [
+      "Premium tech gear from trusted brands.",
+      "Available for rent for work, study, and events."
+    ]
+  };
+
+  // Calculate price whenever inputs change (uses perDayPrice from backend when available)
   useEffect(() => {
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
@@ -62,14 +226,13 @@ const RentalForm = () => {
       );
 
       if (days > 0) {
-        const basePrice =
-          basePrices[formData.product] || basePrices["Default"];
-        setPrice(basePrice * formData.quantity * days);
+        const dayPrice = Number(perDayPrice) || 0;
+        setPrice(dayPrice * (Number(formData.quantity) || 1) * days);
       } else {
         setPrice(0);
       }
     }
-  }, [formData.startDate, formData.endDate, formData.product, formData.quantity]);
+  }, [formData.startDate, formData.endDate, formData.product, formData.quantity, perDayPrice]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -79,23 +242,49 @@ const RentalForm = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!formData.terms) {
-      alert("You must agree to the terms and conditions.");
-      return;
-    }
-    console.log("Rental Form Data:", { ...formData, price });
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.terms) {
+    alert("You must agree to the terms and conditions.");
+    return;
+  }
+
+  // Prepare data to send
+  const dataToSend = { ...formData, price };
+
+  try {
+    const { data } = await api.post("/rental", dataToSend, {
+      headers: { "Content-Type": "application/json" },
+      withCredentials: true,
+    });
     alert("Form submitted successfully!");
-  };
+    console.log("Saved in backend:", data);
+    navigate("/rental");
+  } catch (error) {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || error.message;
+    if (status === 409) {
+      alert("This item is not available in the stock right now.");
+    } else {
+      alert("Failed to submit form: " + message);
+    }
+    console.error("Error submitting form:", error);
+  }
+};
+
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6 font-titillium">
-      <div className="flex bg-white shadow-lg rounded-lg overflow-hidden max-w-5xl w-full">
+
+    <div className="min-h-screen flex items-center justify-center p-6 bg-cover bg-center font-titillium" style={{ backgroundImage: `url(${RFbg})` }}>
+      <div className="relative max-w-5xl w-full">
+        <div className="pointer-events-none absolute -inset-0.5 rounded-2xl bg-gradient-to-r from-purple-950 via-pink-700 to-blue-900 opacity-0 blur-md" />
+        <div className="relative flex rounded-2xl overflow-hidden bg-white/20 backdrop-blur-xl border border-white/35 shadow-2xl">
+
         {/* Left Side - Image + Description */}
-        <div className="w-1/2 bg-gray-50 flex flex-col items-center p-6">
+        <div className="w-1/2 bg-white/5 flex flex-col items-center p-6">
           <img
-            src={WirelessMousemg1}
+            src={productDetails && productDetails.image ? productDetails.image : selectedImage}
             alt="Rental banner"
             className="w-full h-80 object-cover rounded mb-4"
           />
@@ -103,22 +292,33 @@ const RentalForm = () => {
           <h3 className="text-xl font-bold mb-2">{selectedProduct || "Select a Product"}</h3>
 
           {/* Product Description */}
-          <p className="text-gray-700 text-center mb-2">
-            {selectedProduct 
-              ? `High-quality ${selectedProduct.toLowerCase()} available for rent. Perfect for your projects and events.`
-              : "Choose a product from our rental page to see details here."
-            }
-          </p>
+          {selectedProduct ? (
+            <div className="text-sm text-gray-950 mb-2 text-left">
+              {productDetails && productDetails.description ? (
+                <p className="mb-2">{productDetails.description}</p>
+              ) : (
+                <ul className="list-disc list-inside space-y-1">
+                  {(productDescriptions[selectedProduct] || productDescriptions.Default).map((point, idx) => (
+                    <li key={idx}>{point}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-800 text-center mb-2">
+              Choose a product from our rental page to see details here.
+            </p>
+          )}
 
           {/* Price */}
-          <p className="text-lg font-semibold text-blue-600 mb-6">
-            Price per day: LKR {basePrices[selectedProduct] || basePrices["Default"]}
+          <p className="text-lg font-semibold text-purple-500 mb-6">
+            Price per day: LKR {perDayPrice}
           </p>
 
           {/* Terms & Conditions */}
-          <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-4 mt-auto">
+          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-lg shadow-sm p-4 mt-auto">
             <h4 className="font-bold mb-2 text-gray-800">Terms & Conditions</h4>
-            <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+            <ul className="list-disc list-inside text-sm text-gray-800 space-y-1">
               <li>Charges apply for damages or late returns.</li>
               <li>Rental must be returned by the agreed due date.</li>
               <li>Reservation cancellations are fully refundable.</li>
@@ -131,7 +331,7 @@ const RentalForm = () => {
           <div className="flex items-center justify-between mb-6">
             <button
               onClick={() => navigate("/rental")}
-              className="text-blue-600 hover:text-blue-800 font-medium"
+              className=" text-white shadow-sm transition"
             >
               ← Back to Rental Showcase
             </button>
@@ -141,7 +341,7 @@ const RentalForm = () => {
           <form onSubmit={handleSubmit}>
             {/* Personal Info */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Full Name</label>
+              <label className="block mb-1 font-semibold text-black">Full Name</label>
               <input
                 type="text"
                 name="fullName"
@@ -153,19 +353,21 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Email</label>
+              <label className="block mb-1 font-semibold text-black">Email Address</label>
               <input
                 type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
+                value={user?.email || ""}
+                className="w-full border rounded p-2 bg-gray-100 text-gray-600 cursor-not-allowed"
+                disabled
+                readOnly
               />
+              <p className="text-sm text-gray-400 mt-1">
+                Email cannot be changed
+              </p>
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Phone</label>
+              <label className="block mb-1 font-semibold text-black">Phone Number</label>
               <input
                 type="text"
                 name="phone"
@@ -177,7 +379,7 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">NIC Number</label>
+              <label className="block mb-1 font-semibold text-black">NIC Number</label>
               <input
                 type="text"
                 name="nic"
@@ -189,7 +391,7 @@ const RentalForm = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Address</label>
+              <label className="block mb-1 font-semibold text-black">Address</label>
               <textarea
                 name="address"
                 value={formData.address}
@@ -201,7 +403,7 @@ const RentalForm = () => {
 
             {/* Product */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Product</label>
+              <label className="block mb-1 font-semibold text-black">Product</label>
               {selectedProduct ? (
                 <input
                   type="text"
@@ -220,16 +422,20 @@ const RentalForm = () => {
                   required
                 >
                   <option value="">Select a product</option>
-                  {Object.keys(basePrices).filter(key => key !== "Default").map(product => (
-                    <option key={product} value={product}>{product}</option>
-                  ))}
+                  {productDetails ? (
+                    <option value={productDetails.name}>{productDetails.name}</option>
+                  ) : (
+                    Object.keys(basePrices).filter(key => key !== "Default").map(product => (
+                      <option key={product} value={product}>{product}</option>
+                    ))
+                  )}
                 </select>
               )}
             </div>
 
             {/* Quantity */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Quantity</label>
+              <label className="block mb-1 font-semibold text-black">Quantity</label>
               <input
                 type="number"
                 name="quantity"
@@ -241,34 +447,37 @@ const RentalForm = () => {
               />
             </div>
 
-            {/* Rental Dates */}
-            <div className="mb-4">
-              <label className="block mb-1 font-semibold">Start Date</label>
-              <input
-                type="date"
-                name="startDate"
-                value={formData.startDate}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-            </div>
+           {/* Rental Dates */}
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold text-black">Start Date</label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formData.startDate}
+                  onChange={handleChange}
+                  min={new Date().toISOString().split("T")[0]} // ⬅️ disables past days
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
 
-            <div className="mb-4">
-              <label className="block mb-1 font-semibold">End Date</label>
-              <input
-                type="date"
-                name="endDate"
-                value={formData.endDate}
-                onChange={handleChange}
-                className="w-full border rounded p-2"
-                required
-              />
-            </div>
+              <div className="mb-4">
+                <label className="block mb-1 font-semibold text-black">End Date</label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  min={formData.startDate || new Date().toISOString().split("T")[0]} // ⬅️ can't pick before start date
+                  className="w-full border rounded p-2"
+                  required
+                />
+              </div>
+
 
             {/* Auto-Calculated Price */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Total Price (LKR)</label>
+              <label className="block mb-1 font-semibold text-black">Total Price (LKR)</label>
               <input
                 type="text"
                 value={price}
@@ -277,12 +486,12 @@ const RentalForm = () => {
               />
             </div>
 
-            {/* Purpose */}
+            {/* Remark */}
             <div className="mb-4">
-              <label className="block mb-1 font-semibold">Purpose</label>
+              <label className="block mb-1 font-semibold text-black">Remark</label>
               <textarea
-                name="purpose"
-                value={formData.purpose}
+                name="Remark"
+                value={formData.Remark}
                 onChange={handleChange}
                 className="w-full border rounded p-2"
               />
@@ -290,7 +499,7 @@ const RentalForm = () => {
 
             {/* Terms */}
             <div className="mb-4">
-              <label className="inline-flex items-center">
+              <label className="inline-flex items-center text-black">
                 <input
                   type="checkbox"
                   name="terms"
@@ -307,12 +516,13 @@ const RentalForm = () => {
             <div className="text-center">
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition"
+                className="px-6 py-2 rounded-lg border border-white/30 bg-white/20 backdrop-blur-md text-white shadow-sm transition hover:bg-purple-800 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
               >
                 Submit
               </button>
             </div>
           </form>
+        </div>
         </div>
       </div>
     </div>
