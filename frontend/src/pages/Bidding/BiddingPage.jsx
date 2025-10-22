@@ -30,8 +30,7 @@ const heroSlides = [
     title: "Your Products Deserve a Second Life",
     description:
       "Sell your products directly to eager bidders and use your earnings to power up with premium upgrades. One marketplace — endless possibilities.",
-    img: BidHero1,
-    bgImg: "",
+    img: BidHero1, 
   },
   {
     title: "Upgrade Smarter, Not Harder",
@@ -43,7 +42,7 @@ const heroSlides = [
     title: "Bid on Premium Tech for Less",
     description:
       "Why pay full price? Compete in real-time auctions and grab used devices at unbeatable prices, only on our marketplace.",
-    img: BidHero1,
+    img: "https://images.unsplash.com/photo-1593640408182-31c70c8268f5?ixlib=rb-4.1.0&auto=format&fit=crop&w=2042&q=80",
   },
 ];
 
@@ -228,36 +227,41 @@ const BiddingPage = () => {
         <div className="w-full">
           {/* Hero Section */}
             <section className="relative w-full h-[100vh] text-white overflow-hidden">
-              <Slider {...settings} className="h-full">
+              <Slider
+                {...settings}
+                className="h-full"
+              >
                 {heroSlides.map((slide, index) => (
-                  <div
-                    key={index}
-                    className="relative flex items-center justify-center h-[100vh] px-12 lg:px-24"
-                    style={{
-                      backgroundImage: `url(${slide.img})`, // use slide.img as background
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  >
-                    {/* Dark overlay */}
-                    <div className="absolute inset-0 bg-black"></div>
+                  <div key={index} className="h-[100vh] relative">
+                    <div
+                      className="flex items-center justify-center h-full px-12 lg:px-24 relative"
+                      style={{
+                        backgroundImage: `url(${slide.img})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        backgroundRepeat: "no-repeat",
+                      }}
+                    >
+                      {/* Overlay */}
+                      <div className="absolute inset-0 bg-black/50" />
 
-                    {/* Content */}
-                    <div className="relative z-10 max-w-2xl text-left mt-72 space-y-7">
-                      <p className="text-2xl md:text-5xl font-aldrich leading-snug">
-                        {slide.title}
-                      </p>
-                      <p className="text-lg text-gray-200">{slide.description}</p>
-                      <div className="flex space-x-4 justify-start pt-4">
-                        <button className="px-6 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition">
-                          Start Selling
-                        </button>
-                        <a
-                          href="#_"
-                          className="relative inline-flex items-center justify-center px-6 py-3 border-2 border-purple-600 rounded-full text-purple-600 hover:bg-purple-600 hover:text-white transition"
-                        >
-                          Start Bidding
-                        </a>
+                      {/* Content */}
+                      <div className="relative z-10 max-w-2xl text-left space-y-7">
+                        <p className="text-2xl md:text-5xl font-aldrich leading-snug">
+                          {slide.title}
+                        </p>
+                        <p className="text-lg text-gray-200">{slide.description}</p>
+                        <div className="flex space-x-4 justify-start pt-4">
+                          <button className="px-6 py-3 bg-white text-black rounded-full font-semibold hover:bg-gray-200 transition">
+                            Start Selling
+                          </button>
+                          <a
+                            href="#_"
+                            className="relative inline-flex items-center justify-center px-6 py-3 border-2 border-purple-600 rounded-full text-purple-600 hover:bg-purple-600 hover:text-white transition"
+                          >
+                            Start Bidding
+                          </a>
+                        </div>
                       </div>
                     </div>
                   </div>

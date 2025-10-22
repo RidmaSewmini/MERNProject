@@ -156,6 +156,62 @@ export const login = async (req, res) => {
 	}
 };
 
+// Google Login / SignUp
+export const googleLogin = async (req, res) => {
+  try {
+    const { email, firstName, lastName, googleId, photo } = req.body;
+
+    if (!email || !googleId) {
+      return res.status(400).json({ success: false, message: "Email and Google ID are required" });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // If Google ID not set, attach it
+      if (!user.googleId) {
+        user.googleId = googleId;
+        await user.save();
+      }
+    } else {
+      // New user
+      user = new User({
+        email,
+        firstName,
+        lastName,
+        googleId,
+        photo: photo || "https://cdn-icons-png.flaticon.com/512/2202/2202112.png",
+        role: "buyer",
+        isVerified: true, // Google verified by default
+      });
+      await user.save();
+    }
+
+    // Generate token and set cookie
+    generateTokenAndSetCookie(res, user._id);
+
+    res.status(200).json({
+      success: true,
+      message: "Logged in successfully with Google",
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        photo: user.photo,
+        role: user.role,
+        isVerified: user.isVerified,
+        balance: user.balance,
+        commissionBalance: user.commissionBalance,
+      },
+    });
+  } catch (error) {
+    console.error("Error in googleLogin:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 export const logout = async (req, res) => {
 	res.clearCookie("token");
 	res.status(200).json({ success: true, message: "Logged out successfully" });
@@ -248,14 +304,26 @@ export const checkAuth = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const user = req.user; // from protect middleware
-
-    const { firstName, lastName } = req.body;
+    const { firstName, lastName, removePhoto } = req.body;
 
     // Update name fields if provided
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
 
-    // Handle profile image upload via Cloudinary
+    // ✅ Handle removing existing profile image
+    if (removePhoto === "true" && user.photo && user.photoPublicId) {
+      try {
+        await cloudinary.v2.uploader.destroy(user.photoPublicId);
+      } catch (error) {
+        console.error("Cloudinary image delete error:", error);
+      }
+
+      // Reset to default image
+      user.photo = "https://cdn-icons-png.flaticon.com/512/2202/2202112.png";
+      user.photoPublicId = null; // ✅ clear Cloudinary public ID
+    }
+
+    // ✅ Handle new profile image upload
     if (req.file) {
       try {
         const uploadedImage = await cloudinary.v2.uploader.upload(req.file.path, {
@@ -265,7 +333,17 @@ export const updateProfile = async (req, res) => {
           unique_filename: false,
         });
 
-        user.photo = uploadedImage.secure_url; // update user's photo
+        // If there was an old image (not default), delete it
+        if (user.photoPublicId) {
+          try {
+            await cloudinary.v2.uploader.destroy(user.photoPublicId);
+          } catch (error) {
+            console.error("Error deleting old Cloudinary image:", error);
+          }
+        }
+
+        user.photo = uploadedImage.secure_url;
+        user.photoPublicId = uploadedImage.public_id; // ✅ store public ID for easy deletion later
       } catch (error) {
         console.error("Cloudinary upload error:", error);
         return res.status(500).json({
@@ -406,7 +484,7 @@ export const getAllUser = async (req, res) => {
       isVerified: user.isVerified,
       balance: user.balance,
       commissionBalance: user.commissionBalance,
-      photo: user.photo || "https://cdn-icons-png.flaticon.com/512/2202/2202112.png", // fallback avatar
+      photo: user.photo || "https://cdn-icons-png.flaticon.com/512/149/149071.png", // fallback avatar
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
     }));

@@ -41,7 +41,6 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-  // frontend/authStore.js
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
@@ -58,6 +57,8 @@ export const useAuthStore = create((set) => ({
       // ✅ Redirect based on role
       if (user?.role === "admin") {
         window.location.href = "/admindashboard"; // admin area
+      } else if (user?.role === "seller") {
+        window.location.href = "/sellerdashboard"; // seller area
       } else {
         window.location.href = "/userdashboard"; // normal users
       }
@@ -69,6 +70,10 @@ export const useAuthStore = create((set) => ({
       throw error;
     }
   },
+
+  // Google login is now handled by Passport.js OAuth redirect flow
+  // No need for loginWithGoogle function as the backend handles the OAuth flow
+  // and redirects back to frontend with authentication cookie
 
   logout: async () => {
     set({ isLoading: true, error: null });
@@ -130,10 +135,9 @@ export const useAuthStore = create((set) => ({
     }
   },
 
-    updateProfile: async (formData) => {
+  updateProfile: async (formData) => {
     set({ isLoading: true, error: null, message: null });
     try {
-      // ⚡️ Must send multipart/form-data if there's a file (photo)
       const response = await axios.put(`${API_URL}/update-profile`, formData, {
         withCredentials: true,
         headers: {
@@ -142,7 +146,7 @@ export const useAuthStore = create((set) => ({
       });
 
       set((state) => ({
-        user: { ...state.user, ...response.data.user }, // merge updated user
+        user: { ...state.user, ...response.data.user },
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -154,6 +158,34 @@ export const useAuthStore = create((set) => ({
       set({
         isLoading: false,
         error: error.response?.data?.message || error.message || "Error updating profile",
+      });
+      throw error;
+    }
+  },
+
+  // 🧼 Remove Profile Picture
+  removeProfilePhoto: async () => {
+    set({ isLoading: true, error: null, message: null });
+    try {
+      const formData = new FormData();
+      formData.append("removePhoto", "true");
+
+      const response = await axios.put(`${API_URL}/update-profile`, formData, {
+        withCredentials: true,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      set((state) => ({
+        user: { ...state.user, ...response.data.user },
+        isLoading: false,
+        message: response.data.message || "Profile photo removed successfully",
+      }));
+
+      return response.data;
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: error.response?.data?.message || error.message || "Error removing profile photo",
       });
       throw error;
     }
@@ -208,4 +240,33 @@ export const useAuthStore = create((set) => ({
       throw error.response?.data?.message || "Failed to change password";
     }
   },
+
+  loginAsSeller: async (email, password) => {
+  set({ isLoading: true, error: null });
+  try {
+    const response = await axios.post(`${API_URL}/login-seller`, { email, password });
+
+    const user = response.data?.user || null;
+    set({
+      user,
+      isAuthenticated: !!user,
+      isLoading: false,
+      error: null,
+    });
+
+    // ✅ redirect seller to seller dashboard
+    if (user?.role === "seller") {
+      window.location.href = "/sellerdashboard";
+    } else {
+      window.location.href = "/userdashboard";
+    }
+  } catch (error) {
+    set({
+      error: error.response?.data?.message || error.message || "Error logging in as seller",
+      isLoading: false,
+    });
+    throw error;
+  }
+  },
+
 }));

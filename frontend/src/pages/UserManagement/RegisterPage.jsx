@@ -47,8 +47,13 @@ const RegisterPage = () => {
   };
 
   const handleSocialLogin = (provider) => {
-    console.log(`Logging in with ${provider}`);
-    // Implement provider logic here
+    if (provider === "google") {
+      // Redirect to backend Google OAuth endpoint
+      window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
+    } else {
+      console.log(`Logging in with ${provider}`);
+      // Implement other provider logic here
+    }
   };
 
   return (

@@ -18,9 +18,10 @@ const LoginPage = () => {
     await login(email, password, rememberMe, navigate);
   };
 
-  const handleSocialLogin = (provider) => {
-    console.log(`Logging in with ${provider}`);
-    // TODO: integrate Google/Facebook/Twitter auth here
+  // Handle Google login with Passport.js OAuth flow
+  const handleGoogleLogin = () => {
+    // Redirect to backend Google OAuth endpoint
+    window.location.href = `${import.meta.env.VITE_API_URL || 'http://localhost:5001'}/api/auth/google`;
   };
 
   return (
@@ -216,7 +217,7 @@ const LoginPage = () => {
 
           <div className="grid grid-cols-3 gap-4">
             <button
-              onClick={() => handleSocialLogin("google")}
+              onClick={handleGoogleLogin}
               className="py-2 px-4 bg-gray-800 hover:bg-gray-700 rounded-lg text-white flex items-center justify-center transition duration-300"
             >
               <svg
